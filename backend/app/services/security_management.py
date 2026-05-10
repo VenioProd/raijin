@@ -10,8 +10,15 @@ from datetime import UTC, datetime
 
 from raijin_shared.models.sprint_6_10 import ApiKey, UserSession
 from raijin_shared.models.user import User
+from raijin_shared.security import decrypt, encrypt
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
+
+try:
+    from cryptography.fernet import InvalidToken
+except ImportError:  # pragma: no cover
+    class InvalidToken(Exception):  # type: ignore[no-redef]
+        pass
 
 
 def hash_secret(value: str) -> str:
@@ -98,6 +105,21 @@ async def touch_session(session: AsyncSession, *, refresh_token: str) -> None:
 
 def generate_totp_secret() -> str:
     return base64.b32encode(secrets.token_bytes(20)).decode("ascii").rstrip("=")
+
+
+def encrypt_totp_secret(secret: str) -> str:
+    return encrypt(secret)
+
+
+def decrypt_totp_secret(stored: str | None) -> str | None:
+    if not stored:
+        return None
+    try:
+        return decrypt(stored)
+    except InvalidToken:
+        # Legacy plaintext value written before encryption was enforced.
+        # Re-encryption happens at the next setup/enable; verify still works.
+        return stored
 
 
 def _totp_at(secret: str, counter: int, digits: int = 6) -> str:

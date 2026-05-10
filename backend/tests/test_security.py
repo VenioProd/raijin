@@ -14,6 +14,8 @@ from app.core.security import (
 )
 from app.services.security_management import (
     _totp_at,
+    decrypt_totp_secret,
+    encrypt_totp_secret,
     hash_secret,
     verify_backup_code,
     verify_totp_code,
@@ -75,3 +77,31 @@ def test_totp_and_backup_codes_verify() -> None:
     assert verify_totp_code(secret, "000000") is False
     assert verify_backup_code([hash_secret("ABCD-EFGH-IJKL")], "ABCD-EFGH-IJKL") == []
     assert verify_backup_code([hash_secret("ABCD-EFGH-IJKL")], "wrong") is None
+
+
+def test_totp_secret_encrypt_roundtrip() -> None:
+    secret = "JBSWY3DPEHPK3PXP"
+    ciphertext = encrypt_totp_secret(secret)
+
+    assert ciphertext != secret
+    assert ciphertext.startswith("gAAAAA"), "Fernet ciphertexts start with gAAAAA"
+    assert decrypt_totp_secret(ciphertext) == secret
+
+
+def test_decrypt_totp_secret_handles_legacy_plaintext() -> None:
+    # Existing rows written before the encryption migration must keep working
+    # until the data migration encrypts them. decrypt() returns the value as-is.
+    legacy_secret = "JBSWY3DPEHPK3PXP"
+    assert decrypt_totp_secret(legacy_secret) == legacy_secret
+    assert decrypt_totp_secret(None) is None
+    assert decrypt_totp_secret("") is None
+
+
+def test_totp_setup_then_verify_with_encrypted_storage() -> None:
+    secret = "JBSWY3DPEHPK3PXP"
+    stored = encrypt_totp_secret(secret)
+
+    decrypted = decrypt_totp_secret(stored)
+    assert decrypted is not None
+    code = _totp_at(decrypted, int(time.time() // 30))
+    assert verify_totp_code(decrypted, code) is True
