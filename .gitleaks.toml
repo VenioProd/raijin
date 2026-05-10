@@ -1,0 +1,28 @@
+# Repository-specific tuning for gitleaks. Keep the upstream default ruleset
+# and add our own rules + allowlists.
+[extend]
+useDefault = true
+
+[[rules]]
+id = "raijin-rotated-admin-test"
+description = "Rotated test admin credential — must never reappear (#10)"
+regex = '''RaijinAdmin2026!'''
+tags = ["secret", "test-credentials"]
+
+[allowlist]
+description = "Acceptable test/dev placeholders"
+paths = [
+  '''(?i)\.env\.example''',
+  '''(?i)\.env\.staging\.example''',
+  '''(?i)\.env\.production\.example''',
+  '''backend/tests/conftest\.py''',
+  '''workers/tests/conftest\.py''',
+  '''docker-compose\.yml''',
+  '''\.github/workflows/ci\.yml''',
+]
+regexes = [
+  '''raijin_dev_password''',
+  '''test_jwt_secret_please_change_in_prod''',
+  '''test_fernet_key_PLACEHOLDER''',
+  '''zmWmkMt1J5w0EwzMbBmTU2-qaIa_6mfsgPMHiv63b3w=''',
+]

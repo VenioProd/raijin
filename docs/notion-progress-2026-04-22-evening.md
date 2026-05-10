@@ -111,7 +111,7 @@ Plus : `S3_PUBLIC_URL` setting, `RATE_LIMIT_LOGIN_PER_MIN` / `RATE_LIMIT_REGISTE
 - **CI** : GitHub Actions 4 jobs (backend, workers, frontend, docker)
 - **Docs** : 5 ADRs · user guide FR/EN · PRODUCTION.md · deployment runbook
 
-Compte admin test : `raphael@venio.paris` / `RaijinAdmin2026!`.
+Compte admin test : credentials retirés (rotés le 2026-05-10, voir #10). Pour un nouveau compte de test, utiliser le seeder ou créer un utilisateur avec un mot de passe à usage unique.
 
 ---
 
