@@ -24,10 +24,7 @@ def _peer_in_trusted_proxies(peer: str | None) -> bool:
         addr = ipaddress.ip_address(peer)
     except ValueError:
         return False
-    for network in get_settings().trusted_proxy_networks:
-        if addr in network:
-            return True
-    return False
+    return any(addr in network for network in get_settings().trusted_proxy_networks)
 
 
 def _parse_forwarded_header(value: str) -> str | None:
@@ -46,7 +43,7 @@ def _parse_forwarded_header(value: str) -> str | None:
     return None
 
 
-def get_client_ip(request: "Request") -> str | None:
+def get_client_ip(request: Request) -> str | None:
     """Return the real client IP, honoring forwarded headers only from proxies we trust."""
     peer = request.client.host if request.client else None
     if not _peer_in_trusted_proxies(peer):

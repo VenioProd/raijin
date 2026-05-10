@@ -17,7 +17,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 try:
     from cryptography.fernet import InvalidToken
 except ImportError:  # pragma: no cover
-    class InvalidToken(Exception):  # type: ignore[no-redef]
+    class InvalidToken(Exception):  # type: ignore[no-redef]  # noqa: N818
         pass
 
 

@@ -124,7 +124,7 @@ def process_due_requests(session: Session) -> dict[str, int]:
     for request in requests:
         try:
             counts = purge_user_data(session, request)
-        except Exception as exc:  # noqa: BLE001
+        except Exception as exc:
             session.rollback()
             request.status = "failed"
             session.add(request)
