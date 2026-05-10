@@ -1,6 +1,7 @@
 from fastapi import APIRouter, HTTPException, Request, status
 
 from app.api.deps import CurrentUser, DbSession
+from app.core.client_ip import get_client_ip
 from app.core.config import get_settings
 from app.core.rate_limit import limiter, login_rate, register_rate
 from app.schemas.auth import (
@@ -53,7 +54,7 @@ async def register(request: Request, payload: RegisterRequest, db: DbSession) ->
         db,
         user=user,
         refresh_token=refresh,
-        ip_address=request.client.host if request.client else None,
+        ip_address=get_client_ip(request),
         user_agent=request.headers.get("user-agent"),
     )
     return TokenPair(access_token=access, refresh_token=refresh)
@@ -88,7 +89,7 @@ async def login(request: Request, payload: LoginRequest, db: DbSession) -> Token
         db,
         user=user,
         refresh_token=refresh,
-        ip_address=request.client.host if request.client else None,
+        ip_address=get_client_ip(request),
         user_agent=request.headers.get("user-agent"),
     )
     return TokenPair(access_token=access, refresh_token=refresh)

@@ -81,6 +81,27 @@ class Settings(BaseSettings):
     rate_limit_login_per_min: int = 10
     rate_limit_register_per_min: int = 3
 
+    # Comma-separated CIDRs of reverse proxies whose X-Forwarded-For/Forwarded
+    # headers we trust. Anything else is ignored (request.client.host wins).
+    # Empty string disables XFF parsing entirely (default — safe for direct
+    # exposure or when the upstream is not yet configured).
+    trusted_proxies: str = ""
+
+    @property
+    def trusted_proxy_networks(self) -> list:
+        import ipaddress as _ip
+
+        nets = []
+        for raw in (self.trusted_proxies or "").split(","):
+            raw = raw.strip()
+            if not raw:
+                continue
+            try:
+                nets.append(_ip.ip_network(raw, strict=False))
+            except ValueError:
+                continue
+        return nets
+
     @property
     def upload_max_size_bytes(self) -> int:
         return self.upload_max_size_mb * 1024 * 1024
