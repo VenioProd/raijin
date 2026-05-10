@@ -19,6 +19,9 @@ paths = [
   '''workers/tests/conftest\.py''',
   '''docker-compose\.yml''',
   '''\.github/workflows/ci\.yml''',
+  # The gitleaks config itself contains the regex literal of the rotated
+  # credential; never scan the config against its own rule.
+  '''\.gitleaks\.toml''',
 ]
 regexes = [
   '''raijin_dev_password''',
