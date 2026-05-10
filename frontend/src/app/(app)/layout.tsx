@@ -2,6 +2,7 @@
 
 import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
+import { useTranslations } from "next-intl";
 import { apiFetch } from "@/lib/api";
 import { clearTokens, getAccessToken } from "@/lib/auth";
 import type { User } from "@/lib/types";
@@ -11,6 +12,7 @@ import { CommandPaletteProvider } from "@/components/command-palette";
 
 export default function AppLayout({ children }: { children: React.ReactNode }) {
   const router = useRouter();
+  const t = useTranslations("app");
   const [user, setUser] = useState<User | null>(null);
   const [ready, setReady] = useState(false);
 
@@ -33,7 +35,7 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
   if (!ready) {
     return (
       <div className="flex min-h-screen items-center justify-center bg-[#050508] text-sm text-white/50">
-        Chargement…
+        {t("loading")}
       </div>
     );
   }

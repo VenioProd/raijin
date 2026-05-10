@@ -13,6 +13,7 @@ import {
   Upload,
 } from "lucide-react";
 import { toast } from "sonner";
+import { useLocale, useTranslations } from "next-intl";
 import { apiFetch } from "@/lib/api";
 
 type NotificationKind =
@@ -61,17 +62,22 @@ const COLORS: Record<NotificationKind, string> = {
   system: "text-white/70",
 };
 
-function formatRel(iso: string): string {
-  const d = new Date(iso);
-  const diff = Date.now() - d.getTime();
-  if (diff < 60_000) return "à l'instant";
-  if (diff < 3_600_000) return `il y a ${Math.round(diff / 60_000)} min`;
-  if (diff < 86_400_000) return `il y a ${Math.round(diff / 3_600_000)} h`;
-  return d.toLocaleDateString("fr-FR", {
-    day: "2-digit",
-    month: "short",
-    year: "numeric",
-  });
+function useFormatRel() {
+  const t = useTranslations("notifications");
+  const locale = useLocale();
+  const intlLocale = locale === "fr" ? "fr-FR" : locale === "el" ? "el-GR" : "en-US";
+  return (iso: string): string => {
+    const d = new Date(iso);
+    const diff = Date.now() - d.getTime();
+    if (diff < 60_000) return t("just_now");
+    if (diff < 3_600_000) return t("minutes_ago", { count: Math.round(diff / 60_000) });
+    if (diff < 86_400_000) return t("hours_ago", { count: Math.round(diff / 3_600_000) });
+    return d.toLocaleDateString(intlLocale, {
+      day: "2-digit",
+      month: "short",
+      year: "numeric",
+    });
+  };
 }
 
 function entityHref(n: Notification): string | null {
@@ -81,6 +87,9 @@ function entityHref(n: Notification): string | null {
 }
 
 export default function NotificationsPage() {
+  const t = useTranslations("notifications");
+  const tApp = useTranslations("app");
+  const formatRel = useFormatRel();
   const [data, setData] = useState<NotificationListResponse | null>(null);
   const [filter, setFilter] = useState<"all" | "unread">("all");
 
@@ -90,9 +99,9 @@ export default function NotificationsPage() {
       const res = await apiFetch<NotificationListResponse>(`/notifications${qs}`);
       setData(res);
     } catch {
-      toast.error("Impossible de charger les notifications");
+      toast.error(t("load_failed"));
     }
-  }, [filter]);
+  }, [filter, t]);
 
   useEffect(() => {
     void load();
@@ -103,17 +112,17 @@ export default function NotificationsPage() {
       await apiFetch(`/notifications/${id}/read`, { method: "POST" });
       await load();
     } catch {
-      toast.error("Action impossible");
+      toast.error(t("action_failed"));
     }
   }
 
   async function markAll() {
     try {
       await apiFetch("/notifications/read-all", { method: "POST" });
-      toast.success("Toutes les notifications marquées lues");
+      toast.success(t("all_marked_read"));
       await load();
     } catch {
-      toast.error("Action impossible");
+      toast.error(t("action_failed"));
     }
   }
 
@@ -122,19 +131,19 @@ export default function NotificationsPage() {
       <div className="flex items-start justify-between">
         <div>
           <h1 className="font-serif-italic text-[30px] leading-none text-white/95">
-            Notifications
+            {t("title")}
           </h1>
           <p className="mt-1 text-[13px] text-white/60">
             {data
-              ? `${data.total} au total · ${data.unread} non lue${data.unread > 1 ? "s" : ""}`
-              : "Chargement…"}
+              ? t("counts", { total: data.total, unread: data.unread })
+              : tApp("loading")}
           </p>
         </div>
         <div className="flex items-center gap-2">
           {data && data.unread > 0 && (
             <button onClick={markAll} className="btn-glass">
               <Check className="h-3.5 w-3.5" />
-              Tout marquer lu
+              {t("mark_all_read")}
             </button>
           )}
         </div>
@@ -160,7 +169,7 @@ export default function NotificationsPage() {
                 : { border: "1px solid rgba(255,255,255,0.06)" }
             }
           >
-            {f === "all" ? "Toutes" : "Non lues"}
+            {f === "all" ? t("filter_all") : t("filter_unread")}
           </button>
         ))}
       </div>
@@ -170,7 +179,7 @@ export default function NotificationsPage() {
           {data && data.items.length === 0 ? (
             <div className="flex flex-col items-center gap-3 py-16 text-center text-[13px] text-white/45">
               <Bell className="h-8 w-8 text-white/20" />
-              <p>Aucune notification.</p>
+              <p>{t("empty")}</p>
             </div>
           ) : (
             <ul className="divide-y divide-white/[0.04]">

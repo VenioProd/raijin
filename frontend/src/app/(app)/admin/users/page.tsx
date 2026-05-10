@@ -1,6 +1,7 @@
 "use client";
 
 import { useCallback, useEffect, useState } from "react";
+import { useTranslations } from "next-intl";
 import { toast } from "sonner";
 import { apiFetch, ApiError } from "@/lib/api";
 import type {
@@ -22,19 +23,21 @@ import {
 
 const ROLES: UserRole[] = ["admin", "reviewer", "viewer"];
 
-function roleLabel(role: UserRole): string {
-  switch (role) {
-    case "admin":
-      return "Admin";
-    case "reviewer":
-    case "user":
-      return "Reviewer";
-    case "viewer":
-      return "Viewer";
-  }
-}
-
 export default function AdminUsersPage() {
+  const t = useTranslations("admin");
+  const tApp = useTranslations("app");
+
+  function roleLabel(role: UserRole): string {
+    switch (role) {
+      case "admin":
+        return t("users.role.admin");
+      case "reviewer":
+      case "user":
+        return t("users.role.reviewer");
+      case "viewer":
+        return t("users.role.viewer");
+    }
+  }
   const [users, setUsers] = useState<TenantUser[]>([]);
   const [loading, setLoading] = useState(true);
   const [creating, setCreating] = useState(false);
@@ -50,9 +53,9 @@ export default function AdminUsersPage() {
       setUsers(data);
     } catch (err) {
       if (err instanceof ApiError && err.status === 403) {
-        toast.error("Accès réservé aux administrateurs");
+        toast.error(t("users.error_forbidden"));
       } else {
-        toast.error("Impossible de charger les utilisateurs");
+        toast.error(t("users.error_load"));
       }
     } finally {
       setLoading(false);
@@ -81,12 +84,12 @@ export default function AdminUsersPage() {
       setNewName("");
       setNewRole("reviewer");
       await load();
-      toast.success("Invitation envoyée");
+      toast.success(t("users.toast_invited"));
     } catch (err) {
       if (err instanceof ApiError && err.status === 409) {
-        toast.error("Email déjà utilisé");
+        toast.error(t("users.error_email_used"));
       } else {
-        toast.error("Création impossible");
+        toast.error(t("users.error_create"));
       }
     } finally {
       setCreating(false);
@@ -99,10 +102,10 @@ export default function AdminUsersPage() {
         method: "PATCH",
         json: { role },
       });
-      toast.success(`Rôle mis à jour : ${roleLabel(role)}`);
+      toast.success(t("users.toast_role_updated", { role: roleLabel(role) }));
       await load();
     } catch {
-      toast.error("Mise à jour impossible");
+      toast.error(t("users.error_update"));
     }
   }
 
@@ -112,13 +115,13 @@ export default function AdminUsersPage() {
         method: "PATCH",
         json: { is_active: !user.is_active },
       });
-      toast.success(user.is_active ? "Utilisateur désactivé" : "Utilisateur réactivé");
+      toast.success(user.is_active ? t("users.toast_deactivated") : t("users.toast_reactivated"));
       await load();
     } catch (err) {
       if (err instanceof ApiError && err.status === 409) {
-        toast.error("Tu ne peux pas te désactiver toi-même");
+        toast.error(t("users.error_self_deactivate"));
       } else {
-        toast.error("Action impossible");
+        toast.error(t("users.error_action"));
       }
     }
   }
@@ -126,16 +129,16 @@ export default function AdminUsersPage() {
   return (
     <div className="space-y-6">
       <div>
-        <h1 className="text-2xl font-semibold tracking-tight">Utilisateurs</h1>
+        <h1 className="text-2xl font-semibold tracking-tight">{t("users.title")}</h1>
         <p className="text-sm text-muted-foreground">
-          Gère les comptes de ton organisation.
+          {t("users.subtitle")}
         </p>
       </div>
 
       {activationLink && (
         <Card>
           <CardContent className="space-y-2 pt-6">
-            <p className="text-sm font-medium">Lien d&apos;activation dev :</p>
+            <p className="text-sm font-medium">{t("users.activation_link_label")}</p>
             <a
               href={activationLink}
               className="block break-all rounded-md bg-muted px-3 py-2 text-sm underline-offset-4 hover:underline"
@@ -143,7 +146,7 @@ export default function AdminUsersPage() {
               {activationLink}
             </a>
             <Button variant="outline" size="sm" onClick={() => setActivationLink(null)}>
-              Masquer
+              {t("users.hide")}
             </Button>
           </CardContent>
         </Card>
@@ -151,14 +154,14 @@ export default function AdminUsersPage() {
 
       <Card>
         <CardHeader>
-          <CardTitle className="text-lg">Ajouter un utilisateur</CardTitle>
+          <CardTitle className="text-lg">{t("users.add_title")}</CardTitle>
           <CardDescription>
-            Un email d&apos;activation sera envoyé à la personne concernée.
+            {t("users.add_description")}
           </CardDescription>
         </CardHeader>
         <CardContent className="grid gap-3 sm:grid-cols-4">
           <div className="space-y-1 sm:col-span-2">
-            <Label htmlFor="invite-email">Email</Label>
+            <Label htmlFor="invite-email">{t("users.email")}</Label>
             <Input
               id="invite-email"
               value={newEmail}
@@ -167,7 +170,7 @@ export default function AdminUsersPage() {
             />
           </div>
           <div className="space-y-1">
-            <Label htmlFor="invite-name">Nom</Label>
+            <Label htmlFor="invite-name">{t("users.name")}</Label>
             <Input
               id="invite-name"
               value={newName}
@@ -175,7 +178,7 @@ export default function AdminUsersPage() {
             />
           </div>
           <div className="space-y-1">
-            <Label htmlFor="invite-role">Rôle</Label>
+            <Label htmlFor="invite-role">{t("users.role_label")}</Label>
             <select
               id="invite-role"
               value={newRole}
@@ -191,7 +194,7 @@ export default function AdminUsersPage() {
           </div>
           <div className="sm:col-span-4">
             <Button onClick={createUser} disabled={creating || !newEmail}>
-              {creating ? "Envoi…" : "Inviter"}
+              {creating ? t("users.sending") : t("users.invite")}
             </Button>
           </div>
         </CardContent>
@@ -199,19 +202,19 @@ export default function AdminUsersPage() {
 
       <Card>
         <CardHeader>
-          <CardTitle className="text-lg">Équipe ({users.length})</CardTitle>
+          <CardTitle className="text-lg">{t("users.team")} ({users.length})</CardTitle>
         </CardHeader>
         <CardContent>
           {loading ? (
-            <p className="text-sm text-muted-foreground">Chargement…</p>
+            <p className="text-sm text-muted-foreground">{tApp("loading")}</p>
           ) : (
             <table className="w-full text-sm">
               <thead className="border-b text-left text-xs uppercase text-muted-foreground">
                 <tr>
-                  <th className="py-2">Email</th>
-                  <th className="py-2">Nom</th>
-                  <th className="py-2">Rôle</th>
-                  <th className="py-2">Statut</th>
+                  <th className="py-2">{t("users.email")}</th>
+                  <th className="py-2">{t("users.name")}</th>
+                  <th className="py-2">{t("users.role_label")}</th>
+                  <th className="py-2">{t("users.status")}</th>
                   <th className="py-2" />
                 </tr>
               </thead>
@@ -235,14 +238,14 @@ export default function AdminUsersPage() {
                     </td>
                     <td className="py-3">
                       {u.is_active ? (
-                        <span className="text-emerald-700">actif</span>
+                        <span className="text-emerald-700">{t("users.status_active")}</span>
                       ) : (
-                        <span className="text-rose-700">désactivé</span>
+                        <span className="text-rose-700">{t("users.status_inactive")}</span>
                       )}
                     </td>
                     <td className="py-3">
                       <Button size="sm" variant="ghost" onClick={() => toggleActive(u)}>
-                        {u.is_active ? "Désactiver" : "Réactiver"}
+                        {u.is_active ? t("users.deactivate") : t("users.reactivate")}
                       </Button>
                     </td>
                   </tr>

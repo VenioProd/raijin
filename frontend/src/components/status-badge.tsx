@@ -1,14 +1,8 @@
+"use client";
+
+import { useTranslations } from "next-intl";
 import { cn } from "@/lib/utils";
 import type { InvoiceStatus } from "@/lib/types";
-
-const LABELS: Record<InvoiceStatus, string> = {
-  uploaded: "Reçue",
-  processing: "Traitement",
-  ready_for_review: "À valider",
-  confirmed: "Validée",
-  rejected: "Rejetée",
-  failed: "Échec",
-};
 
 const CLASSES: Record<InvoiceStatus, string> = {
   uploaded: "bg-slate-100 text-slate-700",
@@ -20,6 +14,7 @@ const CLASSES: Record<InvoiceStatus, string> = {
 };
 
 export function StatusBadge({ status }: { status: InvoiceStatus }) {
+  const t = useTranslations("invoices.status");
   return (
     <span
       className={cn(
@@ -27,7 +22,7 @@ export function StatusBadge({ status }: { status: InvoiceStatus }) {
         CLASSES[status],
       )}
     >
-      {LABELS[status]}
+      {t(status)}
     </span>
   );
 }

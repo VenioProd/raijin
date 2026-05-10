@@ -4,6 +4,7 @@ import Link from "next/link";
 import type { FormEvent } from "react";
 import { use, useCallback, useEffect, useState } from "react";
 import { ArrowLeft, Edit3, GitMerge, Mail, MapPin, Phone, Save, Search, X } from "lucide-react";
+import { useTranslations } from "next-intl";
 import { apiFetch } from "@/lib/api";
 import type { InvoiceStatus } from "@/lib/types";
 import { StatusBadge } from "@/components/status-badge";
@@ -135,6 +136,9 @@ function Kpi({
 }
 
 export default function SupplierDetailPage({ params }: { params: Promise<{ id: string }> }) {
+  const t = useTranslations("suppliers");
+  const tCommon = useTranslations("common");
+  const tApp = useTranslations("app");
   const { id } = use(params);
   const [supplier, setSupplier] = useState<Supplier | null>(null);
   const [stats, setStats] = useState<SupplierStats | null>(null);
@@ -160,9 +164,9 @@ export default function SupplierDetailPage({ params }: { params: Promise<{ id: s
       setStats(st);
       setInvoices(inv);
     } catch {
-      setError("Impossible de charger le fournisseur.");
+      setError(t("error_load_one"));
     }
-  }, [id]);
+  }, [id, t]);
 
   useEffect(() => {
     void load();
@@ -200,7 +204,7 @@ export default function SupplierDetailPage({ params }: { params: Promise<{ id: s
       setEditing(false);
       await load();
     } catch {
-      setError("Impossible d'enregistrer ce fournisseur. Vérifie le VAT ou réessaie.");
+      setError(t("error_save"));
     } finally {
       setSaving(false);
     }
@@ -219,14 +223,14 @@ export default function SupplierDetailPage({ params }: { params: Promise<{ id: s
       setMergeCandidates([]);
       await load();
     } catch {
-      setError("Impossible de fusionner ces fournisseurs.");
+      setError(t("error_merge"));
     } finally {
       setMergingId(null);
     }
   }
 
   if (error) return <p className="text-sm text-rose-400">{error}</p>;
-  if (!supplier) return <p className="text-sm text-white/50">Chargement…</p>;
+  if (!supplier) return <p className="text-sm text-white/50">{tApp("loading")}</p>;
 
   const related = invoices;
 
@@ -239,7 +243,7 @@ export default function SupplierDetailPage({ params }: { params: Promise<{ id: s
           className="mb-3 inline-flex items-center gap-1 text-[12px] text-white/45 transition hover:text-white/80"
         >
           <ArrowLeft className="h-3.5 w-3.5" />
-          Fournisseurs
+          {t("title")}
         </Link>
         <div className="flex flex-wrap items-baseline justify-between gap-4">
           <div>
@@ -283,7 +287,7 @@ export default function SupplierDetailPage({ params }: { params: Promise<{ id: s
               className="btn-glass"
             >
               {editing ? <X className="h-4 w-4" /> : <Edit3 className="h-4 w-4" />}
-              {editing ? "Annuler" : "Modifier"}
+              {editing ? tCommon("cancel") : tCommon("edit")}
             </button>
             <button
               type="button"
@@ -291,10 +295,10 @@ export default function SupplierDetailPage({ params }: { params: Promise<{ id: s
               className="btn-glass"
             >
               <GitMerge className="h-4 w-4" />
-              Fusionner
+              {t("merge")}
             </button>
             <div className="text-[11px] text-white/35">
-              Fournisseur depuis {formatDate(supplier.created_at)}
+              {t("supplier_since", { date: formatDate(supplier.created_at) })}
             </div>
           </div>
         </div>
@@ -311,7 +315,7 @@ export default function SupplierDetailPage({ params }: { params: Promise<{ id: s
               htmlFor="supplier-edit-name"
               className="mb-1 block text-[11px] font-semibold uppercase tracking-[0.10em] text-white/35"
             >
-              Nom
+              {t("field_name")}
             </label>
             <input
               id="supplier-edit-name"
@@ -326,7 +330,7 @@ export default function SupplierDetailPage({ params }: { params: Promise<{ id: s
               htmlFor="supplier-edit-vat"
               className="mb-1 block text-[11px] font-semibold uppercase tracking-[0.10em] text-white/35"
             >
-              VAT
+              {t("field_vat")}
             </label>
             <input
               id="supplier-edit-vat"
@@ -340,7 +344,7 @@ export default function SupplierDetailPage({ params }: { params: Promise<{ id: s
               htmlFor="supplier-edit-country"
               className="mb-1 block text-[11px] font-semibold uppercase tracking-[0.10em] text-white/35"
             >
-              Pays
+              {t("field_country")}
             </label>
             <input
               id="supplier-edit-country"
@@ -357,7 +361,7 @@ export default function SupplierDetailPage({ params }: { params: Promise<{ id: s
               htmlFor="supplier-edit-city"
               className="mb-1 block text-[11px] font-semibold uppercase tracking-[0.10em] text-white/35"
             >
-              Ville
+              {t("field_city")}
             </label>
             <input
               id="supplier-edit-city"
@@ -371,7 +375,7 @@ export default function SupplierDetailPage({ params }: { params: Promise<{ id: s
               htmlFor="supplier-edit-email"
               className="mb-1 block text-[11px] font-semibold uppercase tracking-[0.10em] text-white/35"
             >
-              Email
+              {t("field_email")}
             </label>
             <input
               id="supplier-edit-email"
@@ -385,12 +389,12 @@ export default function SupplierDetailPage({ params }: { params: Promise<{ id: s
             <input
               value={form.phone}
               onChange={(e) => setForm((f) => f && { ...f, phone: e.target.value })}
-              placeholder="Téléphone"
+              placeholder={t("field_phone")}
               className="h-10 w-full rounded-lg border border-white/10 bg-white/[0.04] px-3 text-[13px] text-white placeholder:text-white/35 focus:border-violet-500/40 focus:outline-none focus:ring-2 focus:ring-violet-500/20 md:max-w-[240px]"
             />
             <button type="submit" className="btn-primary-violet" disabled={saving}>
               <Save className="h-4 w-4" />
-              {saving ? "Enregistrement…" : "Enregistrer"}
+              {saving ? t("saving") : tCommon("save")}
             </button>
           </div>
         </form>
@@ -400,21 +404,21 @@ export default function SupplierDetailPage({ params }: { params: Promise<{ id: s
         <div className="glass p-5" style={{ borderRadius: 18 }}>
           <div className="relative z-10">
             <label className="mb-2 block text-[11px] font-semibold uppercase tracking-[0.10em] text-white/35">
-              Fusion de doublon
+              {t("merge_duplicate")}
             </label>
             <div className="relative max-w-xl">
               <Search className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-white/35" />
               <input
                 value={mergeSearch}
                 onChange={(e) => setMergeSearch(e.target.value)}
-                placeholder="Rechercher le fournisseur à absorber…"
+                placeholder={t("merge_search_placeholder")}
                 className="h-10 w-full rounded-lg border border-white/10 bg-white/[0.04] pl-9 pr-3 text-[13px] text-white placeholder:text-white/35 focus:border-violet-500/40 focus:outline-none focus:ring-2 focus:ring-violet-500/20"
               />
             </div>
             <div className="mt-3 divide-y divide-white/[0.04] overflow-hidden rounded-lg border border-white/[0.06]">
               {mergeCandidates.length === 0 ? (
                 <p className="px-3 py-4 text-[13px] text-white/45">
-                  Saisis au moins deux caractères pour trouver un doublon.
+                  {t("merge_hint")}
                 </p>
               ) : (
                 mergeCandidates.map((candidate) => (
@@ -427,8 +431,7 @@ export default function SupplierDetailPage({ params }: { params: Promise<{ id: s
                         {candidate.name}
                       </div>
                       <div className="font-mono-display text-[11px] text-white/40">
-                        {candidate.vat_number ?? "sans VAT"} · {candidate.invoice_count} facture
-                        {candidate.invoice_count > 1 ? "s" : ""}
+                        {candidate.vat_number ?? t("no_vat")} · {t("invoice_count", { count: candidate.invoice_count })}
                       </div>
                     </div>
                     <button
@@ -438,7 +441,7 @@ export default function SupplierDetailPage({ params }: { params: Promise<{ id: s
                       disabled={mergingId === candidate.id}
                     >
                       <GitMerge className="h-4 w-4" />
-                      {mergingId === candidate.id ? "Fusion…" : "Absorber"}
+                      {mergingId === candidate.id ? t("merging") : t("absorb")}
                     </button>
                   </div>
                 ))
@@ -452,26 +455,26 @@ export default function SupplierDetailPage({ params }: { params: Promise<{ id: s
       {stats && (
         <div className="grid gap-4 md:grid-cols-4">
           <Kpi
-            label="Factures"
+            label={t("kpi_invoices")}
             value={String(stats.invoice_count)}
-            hint={`dont ${stats.confirmed_count} validée${stats.confirmed_count > 1 ? "s" : ""}`}
+            hint={t("kpi_invoices_hint", { count: stats.confirmed_count })}
           />
           <Kpi
-            label="Total TTC"
+            label={t("kpi_total_ttc")}
             value={formatMoney(stats.total_ttc)}
-            hint={stats.invoice_count > 0 ? "tous statuts confondus" : undefined}
+            hint={stats.invoice_count > 0 ? t("kpi_total_ttc_hint") : undefined}
           />
           <Kpi
-            label="Facture moyenne"
+            label={t("kpi_avg_invoice")}
             value={stats.avg_ttc > 0 ? formatMoney(stats.avg_ttc) : "—"}
           />
           <Kpi
-            label="Dernière facture"
+            label={t("kpi_last_invoice")}
             value={formatDate(stats.last_invoice_date)}
             accent="mono"
             hint={
               stats.first_invoice_date
-                ? `première le ${formatDate(stats.first_invoice_date)}`
+                ? t("kpi_first_invoice_hint", { date: formatDate(stats.first_invoice_date) })
                 : undefined
             }
           />
@@ -483,18 +486,18 @@ export default function SupplierDetailPage({ params }: { params: Promise<{ id: s
         <div className="relative z-10">
           <div className="border-b border-white/[0.06] px-5 py-3.5">
             <h3 className="text-[11px] font-semibold uppercase tracking-[0.12em] text-white/45">
-              Factures récentes
+              {t("recent_invoices")}
             </h3>
           </div>
           {related && related.length > 0 ? (
             <table className="w-full text-sm">
               <thead>
                 <tr className="border-b border-white/[0.04] text-left text-[10px] font-semibold uppercase tracking-[0.10em] text-white/35">
-                  <th className="px-5 py-2.5">Fichier</th>
-                  <th className="px-5 py-2.5">Numéro</th>
-                  <th className="px-5 py-2.5">Date</th>
-                  <th className="px-5 py-2.5">Total TTC</th>
-                  <th className="px-5 py-2.5">Statut</th>
+                  <th className="px-5 py-2.5">{t("col_file")}</th>
+                  <th className="px-5 py-2.5">{t("col_number")}</th>
+                  <th className="px-5 py-2.5">{t("col_date")}</th>
+                  <th className="px-5 py-2.5">{t("col_total_ttc")}</th>
+                  <th className="px-5 py-2.5">{t("col_status")}</th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-white/[0.04]">
@@ -530,7 +533,7 @@ export default function SupplierDetailPage({ params }: { params: Promise<{ id: s
             </table>
           ) : (
             <p className="py-10 text-center text-[13px] text-white/45">
-              Aucune facture pour ce fournisseur.
+              {t("no_invoices")}
             </p>
           )}
         </div>

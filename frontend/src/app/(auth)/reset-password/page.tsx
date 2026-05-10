@@ -4,17 +4,19 @@ import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
 import { useState } from "react";
 import { KeyRound, Zap } from "lucide-react";
+import { useTranslations } from "next-intl";
 import { ApiError, apiFetch } from "@/lib/api";
 import { PasswordInput } from "@/components/ui/password-input";
 import { Label } from "@/components/ui/label";
 
 export default function ResetPasswordPage() {
+  const t = useTranslations("auth");
   const router = useRouter();
   const params = useSearchParams();
   const token = params.get("token") ?? "";
   const [password, setPassword] = useState("");
   const [success, setSuccess] = useState(false);
-  const [error, setError] = useState<string | null>(token ? null : "Lien de reset manquant.");
+  const [error, setError] = useState<string | null>(token ? null : t("reset_link_missing"));
   const [loading, setLoading] = useState(false);
 
   async function handleSubmit(e: React.FormEvent) {
@@ -33,9 +35,9 @@ export default function ResetPasswordPage() {
       setTimeout(() => router.push("/login"), 700);
     } catch (err) {
       if (err instanceof ApiError && err.status === 400) {
-        setError("Ce lien est invalide ou expiré.");
+        setError(t("reset_link_invalid"));
       } else {
-        setError("Impossible de changer le mot de passe.");
+        setError(t("reset_password_failed"));
       }
     } finally {
       setLoading(false);
@@ -58,16 +60,16 @@ export default function ResetPasswordPage() {
           <span className="text-[18px] font-semibold tracking-tight text-white/95">Raijin</span>
         </div>
         <h1 className="font-serif-italic text-[28px] leading-tight text-white/95">
-          Nouveau mot de passe
+          {t("reset_password_title")}
         </h1>
         <p className="mt-1 text-[13px] text-white/60">
-          Choisis un mot de passe robuste pour retrouver ton espace.
+          {t("reset_password_subtitle")}
         </p>
 
         <form method="post" onSubmit={handleSubmit} className="mt-6 space-y-4">
           <div className="space-y-2">
             <Label htmlFor="password" className="text-white/80">
-              Mot de passe
+              {t("password")}
             </Label>
             <PasswordInput
               id="password"
@@ -83,7 +85,7 @@ export default function ResetPasswordPage() {
           {error && <p className="text-[13px] text-rose-400">{error}</p>}
           {success && (
             <p className="rounded-lg border border-emerald-400/20 bg-emerald-400/10 px-3 py-2 text-[13px] text-emerald-100">
-              Mot de passe mis à jour.
+              {t("password_updated")}
             </p>
           )}
           <button
@@ -92,14 +94,14 @@ export default function ResetPasswordPage() {
             className="btn-primary-violet w-full justify-center disabled:opacity-60"
           >
             <KeyRound className="h-4 w-4" />
-            {loading ? "Mise à jour…" : "Changer le mot de passe"}
+            {loading ? t("updating_password") : t("change_password")}
           </button>
           <p className="text-center text-[13px] text-white/60">
             <Link
               href="/login"
               className="font-medium text-violet-300 underline-offset-4 hover:underline"
             >
-              Retour connexion
+              {t("back_to_login")}
             </Link>
           </p>
         </form>

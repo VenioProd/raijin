@@ -2,6 +2,7 @@
 
 import { useRouter } from "next/navigation";
 import { use, useCallback, useEffect, useMemo, useState } from "react";
+import { useTranslations } from "next-intl";
 import Link from "next/link";
 import {
   ArrowLeft,
@@ -82,6 +83,7 @@ function ValidationBanner({
 }: {
   errors: InvoiceDetail["validation_errors"];
 }) {
+  const t = useTranslations("invoice_review");
   if (!errors || errors.issues.length === 0) {
     return (
       <div
@@ -89,7 +91,7 @@ function ValidationBanner({
         style={{ backdropFilter: "blur(20px)" }}
       >
         <Check className="h-4 w-4" strokeWidth={2.5} />
-        Aucune erreur de validation — prête à être validée.
+        {t("validation_ok")}
       </div>
     );
   }
@@ -112,8 +114,8 @@ function ValidationBanner({
         }`}
       >
         {errorCount > 0
-          ? `${errorCount} erreur${errorCount > 1 ? "s" : ""} à corriger`
-          : `${warnCount} avertissement${warnCount > 1 ? "s" : ""}`}
+          ? t("errors_to_fix", { count: errorCount })
+          : t("warnings_count", { count: warnCount })}
       </div>
       <ul className="space-y-1">
         {errors.issues.map((issue, idx) => (
@@ -139,6 +141,8 @@ function ValidationBanner({
 export default function InvoiceReviewPage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = use(params);
   const router = useRouter();
+  const t = useTranslations("invoice_review");
+  const tInvoices = useTranslations("invoices");
 
   const [invoice, setInvoice] = useState<InvoiceDetail | null>(null);
   const [error, setError] = useState<string | null>(null);
@@ -183,9 +187,9 @@ export default function InvoiceReviewPage({ params }: { params: Promise<{ id: st
       apiFetch<InvoiceComment[]>(`/invoices/${id}/comments`).then(setComments).catch(() => {});
       apiFetch<InvoiceCategory[]>("/invoices/categories").then(setCategories).catch(() => {});
     } catch (err) {
-      setError(err instanceof ApiError ? `Erreur ${err.status}` : "Erreur réseau");
+      setError(err instanceof ApiError ? t("error_with_status", { status: err.status }) : t("network_error"));
     }
-  }, [id]);
+  }, [id, t]);
 
   useEffect(() => {
     void load();
@@ -231,10 +235,10 @@ export default function InvoiceReviewPage({ params }: { params: Promise<{ id: st
         json: patch,
       });
       setInvoice(updated);
-      toast.success("Modifications enregistrées");
+      toast.success(t("toast.changes_saved"));
       return updated;
     } catch (err) {
-      const msg = err instanceof ApiError ? `Erreur ${err.status}` : "Erreur d'enregistrement";
+      const msg = err instanceof ApiError ? t("error_with_status", { status: err.status }) : t("save_error");
       setError(msg);
       toast.error(msg);
       return null;
@@ -251,12 +255,12 @@ export default function InvoiceReviewPage({ params }: { params: Promise<{ id: st
         method: "POST",
       });
       setInvoice(confirmed);
-      toast.success("Facture validée");
+      toast.success(t("toast.invoice_confirmed"));
     } catch (err) {
       const msg =
         err instanceof ApiError && err.status === 422
-          ? "Corrige les erreurs de validation avant de confirmer."
-          : "Impossible de confirmer la facture.";
+          ? t("toast.fix_validation_errors")
+          : t("toast.confirm_failed");
       toast.error(msg);
     }
   }
@@ -271,9 +275,9 @@ export default function InvoiceReviewPage({ params }: { params: Promise<{ id: st
       setInvoice(rejected);
       setShowReject(false);
       setRejectReason("");
-      toast.success("Facture rejetée");
+      toast.success(t("toast.invoice_rejected"));
     } catch {
-      toast.error("Impossible de rejeter");
+      toast.error(t("toast.reject_failed"));
     }
   }
 
@@ -283,7 +287,7 @@ export default function InvoiceReviewPage({ params }: { params: Promise<{ id: st
       await apiFetch(`/invoices/${invoice.id}/skip`, { method: "POST" });
       router.push("/invoices");
     } catch {
-      toast.error("Impossible de passer");
+      toast.error(t("toast.skip_failed"));
     }
   }
 
@@ -294,9 +298,9 @@ export default function InvoiceReviewPage({ params }: { params: Promise<{ id: st
         method: "POST",
       });
       setInvoice(reopened);
-      toast.success("Facture réouverte");
+      toast.success(t("toast.invoice_reopened"));
     } catch {
-      toast.error("Impossible de réouvrir");
+      toast.error(t("toast.reopen_failed"));
     }
   }
 
@@ -306,7 +310,7 @@ export default function InvoiceReviewPage({ params }: { params: Promise<{ id: st
       method: "POST",
     });
     setInvoice(approved);
-    toast.success("Approbation enregistrée");
+    toast.success(t("toast.approval_saved"));
   }
 
   async function savePayment() {
@@ -320,7 +324,7 @@ export default function InvoiceReviewPage({ params }: { params: Promise<{ id: st
       },
     });
     setInvoice(updated);
-    toast.success("Paiement enregistré");
+    toast.success(t("toast.payment_saved"));
   }
 
   async function createShareLink() {
@@ -330,7 +334,7 @@ export default function InvoiceReviewPage({ params }: { params: Promise<{ id: st
     });
     const url = `${window.location.origin}${share.url}`;
     setShareUrl(url);
-    toast.success("Lien portail créé");
+    toast.success(t("toast.share_link_created"));
   }
 
   async function createCategory() {
@@ -342,7 +346,7 @@ export default function InvoiceReviewPage({ params }: { params: Promise<{ id: st
     setCategories((items) => [...items, category].sort((a, b) => a.name.localeCompare(b.name)));
     setCategoryId(category.id);
     setNewCategoryName("");
-    toast.success("Catégorie créée");
+    toast.success(t("toast.category_created"));
   }
 
   async function addComment() {
@@ -356,7 +360,7 @@ export default function InvoiceReviewPage({ params }: { params: Promise<{ id: st
   }
 
   if (error && !invoice) return <p className="text-sm text-rose-400">{error}</p>;
-  if (!invoice) return <p className="text-sm text-white/50">Chargement…</p>;
+  if (!invoice) return <p className="text-sm text-white/50">{tInvoices("loading")}</p>;
 
   const confidence = invoice.ocr_confidence
     ? Math.round(Number(invoice.ocr_confidence) * 100)
@@ -372,7 +376,7 @@ export default function InvoiceReviewPage({ params }: { params: Promise<{ id: st
             className="flex items-center gap-1 text-[12px] text-white/45 transition hover:text-white/80"
           >
             <ArrowLeft className="h-3.5 w-3.5" />
-            Factures
+            {tInvoices("title")}
           </Link>
           <div className="h-4 w-px bg-white/10" />
           <h1 className="font-serif-italic text-[24px] leading-tight text-white/95 truncate max-w-[480px]">
@@ -385,20 +389,20 @@ export default function InvoiceReviewPage({ params }: { params: Promise<{ id: st
               className="inline-flex items-center gap-1 rounded-full border border-amber-300/25 bg-amber-300/10 px-2 py-1 text-[10px] font-semibold uppercase tracking-[0.08em] text-amber-200 transition hover:bg-amber-300/15"
             >
               <AlertTriangle className="h-3 w-3" />
-              Possible doublon
+              {t("possible_duplicate")}
             </Link>
           )}
         </div>
         <div className="flex items-center gap-4 text-[12px] text-white/45">
           {invoice.supplier?.name && (
             <span>
-              <span className="text-white/35">Fournisseur · </span>
+              <span className="text-white/35">{t("supplier_label")} </span>
               <span className="text-white/75">{invoice.supplier.name}</span>
             </span>
           )}
           {confidence !== null && (
             <span className="flex items-center gap-1.5">
-              <span className="text-white/35">OCR</span>
+              <span className="text-white/35">{t("ocr_label")}</span>
               <span
                 className={`font-mono-display ${
                   confidence >= 90 ? "text-emerald-300" : "text-amber-300"
@@ -423,7 +427,7 @@ export default function InvoiceReviewPage({ params }: { params: Promise<{ id: st
               <PdfPreview url={invoice.file_url} mime={invoice.source_file_mime} />
             ) : (
               <div className="flex h-full items-center justify-center text-[13px] text-white/45">
-                Pas d&apos;aperçu disponible
+                {t("no_preview")}
               </div>
             )}
           </div>
@@ -433,10 +437,10 @@ export default function InvoiceReviewPage({ params }: { params: Promise<{ id: st
         <div className="raijin-scroll flex min-h-0 flex-col gap-4 overflow-y-auto pr-2 lg:col-span-2">
           <ValidationBanner errors={invoice.validation_errors} />
 
-          <Section title="Identité" hint={!editable ? "lecture seule" : undefined}>
+          <Section title={t("section_identity")} hint={!editable ? t("read_only") : undefined}>
             <div className="grid gap-3 sm:grid-cols-2">
               <div className="space-y-1.5 sm:col-span-2">
-                <Label className="text-[11px] text-white/55">Numéro de facture</Label>
+                <Label className="text-[11px] text-white/55">{t("invoice_number")}</Label>
                 <input
                   value={invoiceNumber}
                   onChange={(e) => setInvoiceNumber(e.target.value)}
@@ -445,7 +449,7 @@ export default function InvoiceReviewPage({ params }: { params: Promise<{ id: st
                 />
               </div>
               <div className="space-y-1.5">
-                <Label className="text-[11px] text-white/55">Date d&apos;émission</Label>
+                <Label className="text-[11px] text-white/55">{t("issue_date")}</Label>
                 <input
                   type="date"
                   value={issueDate}
@@ -455,7 +459,7 @@ export default function InvoiceReviewPage({ params }: { params: Promise<{ id: st
                 />
               </div>
               <div className="space-y-1.5">
-                <Label className="text-[11px] text-white/55">Date d&apos;échéance</Label>
+                <Label className="text-[11px] text-white/55">{t("due_date")}</Label>
                 <input
                   type="date"
                   value={dueDate}
@@ -468,18 +472,18 @@ export default function InvoiceReviewPage({ params }: { params: Promise<{ id: st
           </Section>
 
           <Section
-            title="Montants"
+            title={t("section_amounts")}
             hint={
               totalsMismatch
-                ? "⚠️ HT + TVA ≠ TTC"
+                ? t("totals_mismatch_hint")
                 : lines.length > 0
-                  ? `Σ lignes HT : ${toDecimal(computedLinesHt)}`
+                  ? t("lines_ht_sum_hint", { value: toDecimal(computedLinesHt) })
                   : undefined
             }
           >
             <div className="grid gap-3 sm:grid-cols-3">
               <div className="space-y-1.5">
-                <Label className="text-[11px] text-white/55">Devise</Label>
+                <Label className="text-[11px] text-white/55">{t("currency")}</Label>
                 <input
                   value={currency}
                   onChange={(e) => setCurrency(e.target.value.toUpperCase())}
@@ -489,7 +493,7 @@ export default function InvoiceReviewPage({ params }: { params: Promise<{ id: st
                 />
               </div>
               <div className="space-y-1.5 sm:col-span-2">
-                <Label className="text-[11px] text-white/55">Total HT</Label>
+                <Label className="text-[11px] text-white/55">{t("total_ht")}</Label>
                 <input
                   value={totalHt}
                   onChange={(e) => setTotalHt(e.target.value)}
@@ -498,7 +502,7 @@ export default function InvoiceReviewPage({ params }: { params: Promise<{ id: st
                 />
               </div>
               <div className="space-y-1.5 sm:col-span-3">
-                <Label className="text-[11px] text-white/55">Total TVA</Label>
+                <Label className="text-[11px] text-white/55">{t("total_vat")}</Label>
                 <input
                   value={totalVat}
                   onChange={(e) => setTotalVat(e.target.value)}
@@ -512,7 +516,7 @@ export default function InvoiceReviewPage({ params }: { params: Promise<{ id: st
                     totalsMismatch ? "text-rose-300" : "text-white/55"
                   }`}
                 >
-                  Total TTC
+                  {t("total_ttc")}
                 </Label>
                 <input
                   value={totalTtc}
@@ -526,10 +530,10 @@ export default function InvoiceReviewPage({ params }: { params: Promise<{ id: st
             </div>
           </Section>
 
-          <Section title="Paiement & workflow" hint={invoice.approval_status}>
+          <Section title={t("section_payment_workflow")} hint={invoice.approval_status}>
             <div className="grid gap-3 sm:grid-cols-2">
               <div className="space-y-1.5">
-                <Label className="text-[11px] text-white/55">Payée le</Label>
+                <Label className="text-[11px] text-white/55">{t("paid_on")}</Label>
                 <input
                   type="date"
                   value={paidAt}
@@ -538,7 +542,7 @@ export default function InvoiceReviewPage({ params }: { params: Promise<{ id: st
                 />
               </div>
               <div className="space-y-1.5">
-                <Label className="text-[11px] text-white/55">Référence paiement</Label>
+                <Label className="text-[11px] text-white/55">{t("payment_reference")}</Label>
                 <input
                   value={paymentReference}
                   onChange={(e) => setPaymentReference(e.target.value)}
@@ -546,13 +550,13 @@ export default function InvoiceReviewPage({ params }: { params: Promise<{ id: st
                 />
               </div>
               <div className="space-y-1.5 sm:col-span-2">
-                <Label className="text-[11px] text-white/55">Catégorie</Label>
+                <Label className="text-[11px] text-white/55">{t("category")}</Label>
                 <select
                   value={categoryId}
                   onChange={(e) => setCategoryId(e.target.value)}
                   className={inputClass}
                 >
-                  <option value="">Sans catégorie</option>
+                  <option value="">{t("no_category")}</option>
                   {categories.map((category) => (
                     <option key={category.id} value={category.id}>
                       {category.name}
@@ -564,32 +568,32 @@ export default function InvoiceReviewPage({ params }: { params: Promise<{ id: st
                 <input
                   value={newCategoryName}
                   onChange={(e) => setNewCategoryName(e.target.value)}
-                  placeholder="Nouvelle catégorie"
+                  placeholder={t("new_category_placeholder")}
                   className={inputClass}
                 />
                 <button className="btn-glass" onClick={createCategory}>
-                  Créer
+                  {t("create")}
                 </button>
               </div>
               <div className="space-y-1.5 sm:col-span-2">
-                <Label className="text-[11px] text-white/55">Tags</Label>
+                <Label className="text-[11px] text-white/55">{t("tags")}</Label>
                 <input
                   value={tags}
                   onChange={(e) => setTags(e.target.value)}
-                  placeholder="marketing, urgent"
+                  placeholder={t("tags_placeholder")}
                   className={inputClass}
                 />
               </div>
               <button className="btn-glass w-fit" onClick={approve}>
-                Approuver
+                {t("approve")}
               </button>
               <button className="btn-glass w-fit" onClick={savePayment}>
                 <CreditCard className="h-3.5 w-3.5" />
-                Sauver paiement
+                {t("save_payment")}
               </button>
               <button className="btn-glass w-fit" onClick={createShareLink}>
                 <Share2 className="h-3.5 w-3.5" />
-                Partager portail
+                {t("share_portal")}
               </button>
               {shareUrl && (
                 <a
@@ -604,8 +608,8 @@ export default function InvoiceReviewPage({ params }: { params: Promise<{ id: st
           </Section>
 
           <Section
-            title="Lignes"
-            hint={`${lines.length} ligne${lines.length > 1 ? "s" : ""}`}
+            title={t("section_lines")}
+            hint={t("lines_count", { count: lines.length })}
           >
             {editable ? (
               <InvoiceLinesEditor lines={lines} onChange={setLines} />
@@ -629,11 +633,11 @@ export default function InvoiceReviewPage({ params }: { params: Promise<{ id: st
                 ))}
               </div>
             ) : (
-              <p className="text-[12px] text-white/35">Aucune ligne.</p>
+              <p className="text-[12px] text-white/35">{t("no_lines")}</p>
             )}
           </Section>
 
-          <Section title="Commentaires" hint={`${comments.length}`}>
+          <Section title={t("section_comments")} hint={`${comments.length}`}>
             <div className="space-y-3">
               {comments.map((comment) => (
                 <div
@@ -646,11 +650,11 @@ export default function InvoiceReviewPage({ params }: { params: Promise<{ id: st
               <Textarea
                 value={commentBody}
                 onChange={(e) => setCommentBody(e.target.value)}
-                placeholder="Ajouter un commentaire, mentionner @email si besoin"
+                placeholder={t("comment_placeholder")}
                 className="border-white/10 bg-white/[0.04] text-white"
               />
               <button className="btn-glass" onClick={addComment}>
-                Commenter
+                {t("comment_action")}
               </button>
             </div>
           </Section>
@@ -661,7 +665,7 @@ export default function InvoiceReviewPage({ params }: { params: Promise<{ id: st
               style={{ backdropFilter: "blur(20px)" }}
             >
               <div className="mb-1 text-[11px] font-semibold uppercase tracking-[0.12em] text-rose-300">
-                Raison du rejet
+                {t("rejection_reason")}
               </div>
               {invoice.rejected_reason}
             </div>
@@ -677,7 +681,7 @@ export default function InvoiceReviewPage({ params }: { params: Promise<{ id: st
                   className="btn-glass flex-1 justify-center disabled:opacity-60 sm:flex-none"
                 >
                   <Save className="h-3.5 w-3.5" />
-                  {saving ? "Enregistrement…" : "Enregistrer"}
+                  {saving ? t("saving") : t("save")}
                 </button>
                 <button
                   onClick={confirm}
@@ -685,7 +689,7 @@ export default function InvoiceReviewPage({ params }: { params: Promise<{ id: st
                   className="btn-primary-violet flex-1 justify-center disabled:opacity-60 sm:flex-none"
                 >
                   <Check className="h-3.5 w-3.5" strokeWidth={2.5} />
-                  Valider
+                  {t("validate")}
                 </button>
                 <button
                   onClick={() => setShowReject((s) => !s)}
@@ -693,7 +697,7 @@ export default function InvoiceReviewPage({ params }: { params: Promise<{ id: st
                   className="inline-flex items-center gap-1.5 rounded-lg border border-rose-500/30 bg-rose-500/10 px-3.5 py-2 text-[12px] font-medium text-rose-300 transition hover:bg-rose-500/20"
                 >
                   <X className="h-3.5 w-3.5" />
-                  Rejeter
+                  {t("reject")}
                 </button>
                 <button
                   onClick={skip}
@@ -701,14 +705,14 @@ export default function InvoiceReviewPage({ params }: { params: Promise<{ id: st
                   className="inline-flex items-center gap-1.5 rounded-lg px-3.5 py-2 text-[12px] font-medium text-white/45 transition hover:bg-white/[0.05] hover:text-white/80"
                 >
                   <SkipForward className="h-3.5 w-3.5" />
-                  Passer
+                  {t("skip")}
                 </button>
               </>
             )}
             {(invoice.status === "confirmed" || invoice.status === "rejected") && (
               <button onClick={reopen} className="btn-glass">
                 <RotateCcw className="h-3.5 w-3.5" />
-                Réouvrir
+                {t("reopen")}
               </button>
             )}
           </div>
@@ -717,12 +721,12 @@ export default function InvoiceReviewPage({ params }: { params: Promise<{ id: st
             <div className="glass p-4" style={{ borderRadius: 18 }}>
               <div className="relative z-10 space-y-2.5">
                 <Label className="text-[11px] font-semibold uppercase tracking-[0.12em] text-white/45">
-                  Raison du rejet
+                  {t("rejection_reason")}
                 </Label>
                 <Textarea
                   value={rejectReason}
                   onChange={(e) => setRejectReason(e.target.value)}
-                  placeholder="Document illisible, mauvais fournisseur, etc."
+                  placeholder={t("rejection_placeholder")}
                   className="border-white/10 bg-white/[0.04] text-white placeholder:text-white/35 focus-visible:ring-rose-500/40"
                 />
                 <div className="flex gap-2">
@@ -731,13 +735,13 @@ export default function InvoiceReviewPage({ params }: { params: Promise<{ id: st
                     disabled={!rejectReason}
                     className="inline-flex items-center gap-1.5 rounded-lg border border-rose-500/40 bg-rose-500/20 px-3.5 py-2 text-[12px] font-medium text-rose-100 transition hover:bg-rose-500/30 disabled:opacity-40"
                   >
-                    Confirmer le rejet
+                    {t("confirm_rejection")}
                   </button>
                   <button
                     onClick={() => setShowReject(false)}
                     className="inline-flex items-center rounded-lg px-3.5 py-2 text-[12px] text-white/45 hover:text-white/80"
                   >
-                    Annuler
+                    {t("cancel")}
                   </button>
                 </div>
               </div>

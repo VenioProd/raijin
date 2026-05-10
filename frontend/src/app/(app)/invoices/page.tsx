@@ -2,6 +2,7 @@
 
 import Link from "next/link";
 import { useEffect, useMemo, useState } from "react";
+import { useTranslations } from "next-intl";
 import { AlertTriangle, CheckSquare, Download, Send, Trash2, Upload } from "lucide-react";
 import { apiFetch } from "@/lib/api";
 import { getAccessToken } from "@/lib/auth";
@@ -11,14 +12,14 @@ import { cn } from "@/lib/utils";
 
 const API_URL = process.env.NEXT_PUBLIC_API_URL ?? "http://localhost:6200";
 
-const STATUS_FILTERS: { value: InvoiceStatus | "all"; label: string }[] = [
-  { value: "all", label: "Toutes" },
-  { value: "ready_for_review", label: "À valider" },
-  { value: "processing", label: "Traitement" },
-  { value: "confirmed", label: "Validées" },
-  { value: "rejected", label: "Rejetées" },
-  { value: "failed", label: "Échecs" },
-  { value: "uploaded", label: "Reçues" },
+const STATUS_FILTER_VALUES: (InvoiceStatus | "all")[] = [
+  "all",
+  "ready_for_review",
+  "processing",
+  "confirmed",
+  "rejected",
+  "failed",
+  "uploaded",
 ];
 
 function formatMoney(amount: string | null, currency: string): string {
@@ -38,6 +39,7 @@ function formatDate(iso: string | null): string {
 }
 
 export default function InvoicesPage() {
+  const t = useTranslations("invoices");
   const [data, setData] = useState<InvoiceListResponse | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [page, setPage] = useState(1);
@@ -55,8 +57,8 @@ export default function InvoicesPage() {
     if (paid !== "all") qs.set("paid", String(paid === "paid"));
     apiFetch<InvoiceListResponse>(`/invoices?${qs.toString()}`)
       .then(setData)
-      .catch(() => setError("Impossible de charger les factures."));
-  }, [page, filter, query, paid]);
+      .catch(() => setError(t("load_error")));
+  }, [page, filter, query, paid, t]);
 
   const pageCount = useMemo(() => {
     if (!data) return 1;
@@ -134,45 +136,47 @@ export default function InvoicesPage() {
       <div className="flex items-start justify-between">
         <div>
           <h1 className="font-serif-italic text-[30px] leading-none text-white/95">
-            Factures
+            {t("title")}
           </h1>
           <p className="mt-1 text-[13px] text-white/60">
-            {data ? `${data.total} facture(s) — page ${data.page} / ${pageCount}` : "Chargement…"}
+            {data
+              ? t("count_summary", { count: data.total, page: data.page, pages: pageCount })
+              : t("loading")}
           </p>
         </div>
         <div className="flex items-center gap-2.5">
           <button onClick={() => exportExcel()} className="btn-glass" disabled={exporting}>
             <Download className="h-3.5 w-3.5" />
-            {exporting ? "Export…" : "Exporter Excel"}
+            {exporting ? t("export_in_progress") : t("export_excel")}
           </button>
           <Link href="/upload" className="btn-primary-violet">
             <Upload className="h-3.5 w-3.5" />
-            Importer
+            {t("import")}
           </Link>
         </div>
       </div>
 
       {/* Filtres pills */}
       <div className="flex flex-wrap gap-1.5">
-        {STATUS_FILTERS.map((f) => (
+        {STATUS_FILTER_VALUES.map((value) => (
           <button
-            key={f.value}
+            key={value}
             onDragOver={(e) => {
               if (draggedId) e.preventDefault();
             }}
-            onDrop={() => dropToStatus(f.value)}
+            onDrop={() => dropToStatus(value)}
             onClick={() => {
-              setFilter(f.value);
+              setFilter(value);
               setPage(1);
             }}
             className={cn(
               "rounded-full px-3 py-1 text-xs font-medium transition-colors",
-              filter === f.value
+              filter === value
                 ? "text-white"
                 : "bg-white/[0.05] text-white/60 hover:bg-white/[0.08]",
             )}
             style={
-              filter === f.value
+              filter === value
                 ? {
                     background:
                       "linear-gradient(90deg, rgba(139,92,246,0.3) 0%, rgba(99,102,241,0.2) 100%)",
@@ -181,7 +185,7 @@ export default function InvoicesPage() {
                 : { border: "1px solid rgba(255,255,255,0.06)" }
             }
           >
-            {f.label}
+            {t(`filters.${value}` as "filters.all")}
           </button>
         ))}
       </div>
@@ -193,7 +197,7 @@ export default function InvoicesPage() {
             setQuery(e.target.value);
             setPage(1);
           }}
-          placeholder="Recherche numéro ou fichier"
+          placeholder={t("search_placeholder")}
           className="h-9 min-w-[240px] rounded-lg border border-white/10 bg-white/[0.04] px-3 text-[13px] text-white placeholder:text-white/35 outline-none"
         />
         <select
@@ -204,31 +208,31 @@ export default function InvoicesPage() {
           }}
           className="h-9 rounded-lg border border-white/10 bg-white/[0.04] px-3 text-[13px] text-white"
         >
-          <option value="all">Tous paiements</option>
-          <option value="paid">Payées</option>
-          <option value="unpaid">Non payées</option>
+          <option value="all">{t("payment_filter.all")}</option>
+          <option value="paid">{t("payment_filter.paid")}</option>
+          <option value="unpaid">{t("payment_filter.unpaid")}</option>
         </select>
         {selected.size > 0 && (
           <div className="ml-auto flex items-center gap-2 text-[12px] text-white/60">
             <CheckSquare className="h-4 w-4 text-violet-200" />
-            {selected.size} sélectionnée(s)
-            <button className="btn-glass" onClick={() => bulk("confirm")}>Valider</button>
-            <button className="btn-glass" onClick={() => bulk("mark_paid")}>Marquer payées</button>
+            {t("selected_count", { count: selected.size })}
+            <button className="btn-glass" onClick={() => bulk("confirm")}>{t("bulk.confirm")}</button>
+            <button className="btn-glass" onClick={() => bulk("mark_paid")}>{t("bulk.mark_paid")}</button>
             <button className="btn-glass" onClick={() => exportExcel(true)}>
               <Download className="h-3.5 w-3.5" />
-              Export
+              {t("bulk.export")}
             </button>
             <button className="btn-glass" onClick={() => bulk("submit_mydata")}>
               <Send className="h-3.5 w-3.5" />
-              myDATA
+              {t("bulk.mydata")}
             </button>
-            <button className="btn-glass" onClick={() => bulk("export_erp")}>ERP</button>
+            <button className="btn-glass" onClick={() => bulk("export_erp")}>{t("bulk.erp")}</button>
             <button
               className="inline-flex items-center gap-1.5 rounded-lg border border-rose-500/30 bg-rose-500/10 px-3 py-2 text-[12px] font-medium text-rose-200"
               onClick={() => bulk("delete")}
             >
               <Trash2 className="h-3.5 w-3.5" />
-              Supprimer
+              {t("bulk.delete")}
             </button>
           </div>
         )}
@@ -240,10 +244,10 @@ export default function InvoicesPage() {
         <div className="relative z-10">
           {data && data.items.length === 0 ? (
             <div className="flex flex-col items-center gap-3 py-14 text-center text-sm text-white/60">
-              <p>Aucune facture à afficher.</p>
+              <p>{t("empty_state")}</p>
               <Link href="/upload" className="btn-glass">
                 <Upload className="h-3.5 w-3.5" />
-                Importer une facture
+                {t("import_invoice")}
               </Link>
             </div>
           ) : (
@@ -251,11 +255,11 @@ export default function InvoicesPage() {
               <thead className="border-b border-white/[0.06]">
                 <tr className="text-left text-[10px] font-semibold uppercase tracking-[0.10em] text-white/35">
                   <th className="px-5 py-3"></th>
-                  <th className="px-5 py-3">Fichier</th>
-                  <th className="px-5 py-3">Numéro</th>
-                  <th className="px-5 py-3">Date</th>
-                  <th className="px-5 py-3">Total TTC</th>
-                  <th className="px-5 py-3">Statut</th>
+                  <th className="px-5 py-3">{t("col_file")}</th>
+                  <th className="px-5 py-3">{t("col_number")}</th>
+                  <th className="px-5 py-3">{t("col_date")}</th>
+                  <th className="px-5 py-3">{t("col_total_ttc")}</th>
+                  <th className="px-5 py-3">{t("col_status")}</th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-white/[0.04]">
@@ -291,7 +295,7 @@ export default function InvoicesPage() {
                         {inv.possible_duplicate_of_id && (
                           <span className="inline-flex items-center gap-1 rounded-full border border-amber-300/25 bg-amber-300/10 px-2 py-0.5 text-[10px] font-semibold uppercase tracking-[0.08em] text-amber-200">
                             <AlertTriangle className="h-3 w-3" />
-                            Doublon
+                            {t("duplicate_badge")}
                           </span>
                         )}
                       </div>
@@ -305,7 +309,7 @@ export default function InvoicesPage() {
                         <StatusBadge status={inv.status} />
                         {inv.paid_at && (
                           <span className="rounded-full border border-emerald-300/25 bg-emerald-300/10 px-2 py-0.5 text-[10px] font-semibold uppercase text-emerald-200">
-                            Payée
+                            {t("paid_badge")}
                           </span>
                         )}
                       </div>
@@ -319,7 +323,11 @@ export default function InvoicesPage() {
           {data && data.total > data.page_size && (
             <div className="flex items-center justify-between border-t border-white/[0.06] px-5 py-3 text-[12px] text-white/45">
               <span>
-                Page {data.page} / {pageCount} · {data.total} facture(s)
+                {t("pagination_summary", {
+                  page: data.page,
+                  pages: pageCount,
+                  count: data.total,
+                })}
               </span>
               <div className="flex gap-2">
                 <button
@@ -327,14 +335,14 @@ export default function InvoicesPage() {
                   disabled={page <= 1}
                   onClick={() => setPage((p) => Math.max(1, p - 1))}
                 >
-                  ← Précédent
+                  {t("previous")}
                 </button>
                 <button
                   className="btn-glass disabled:opacity-40"
                   disabled={page >= pageCount}
                   onClick={() => setPage((p) => Math.min(pageCount, p + 1))}
                 >
-                  Suivant →
+                  {t("next")}
                 </button>
               </div>
             </div>

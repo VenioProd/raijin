@@ -1,6 +1,7 @@
 "use client";
 
 import { useCallback, useEffect, useMemo, useState } from "react";
+import { useTranslations } from "next-intl";
 import { toast } from "sonner";
 import { apiFetch } from "@/lib/api";
 import type { AuditLog, AuditLogListResponse } from "@/lib/types";
@@ -26,6 +27,8 @@ function formatDate(iso: string): string {
 }
 
 export default function AuditPage() {
+  const t = useTranslations("admin");
+  const tApp = useTranslations("app");
   const [data, setData] = useState<AuditLogListResponse | null>(null);
   const [loading, setLoading] = useState(true);
   const [page, setPage] = useState(1);
@@ -41,7 +44,7 @@ export default function AuditPage() {
       const res = await apiFetch<AuditLogListResponse>(`/audit?${qs.toString()}`);
       setData(res);
     } catch {
-      toast.error("Impossible de charger le journal d'audit");
+      toast.error(t("audit.load_error"));
     } finally {
       setLoading(false);
     }
@@ -59,31 +62,31 @@ export default function AuditPage() {
   return (
     <div className="space-y-6">
       <div>
-        <h1 className="text-2xl font-semibold tracking-tight">Journal d&apos;audit</h1>
+        <h1 className="text-2xl font-semibold tracking-tight">{t("audit.title")}</h1>
         <p className="text-sm text-muted-foreground">
-          Toutes les actions sensibles effectuées dans l&apos;organisation.
+          {t("audit.subtitle")}
         </p>
       </div>
 
       <Card>
         <CardHeader>
-          <CardTitle className="text-lg">Filtres</CardTitle>
+          <CardTitle className="text-lg">{t("audit.filters")}</CardTitle>
         </CardHeader>
         <CardContent className="grid gap-3 sm:grid-cols-3">
           <div className="space-y-1">
-            <Label>Action</Label>
+            <Label>{t("audit.action")}</Label>
             <Input
               value={action}
               onChange={(e) => setAction(e.target.value)}
-              placeholder="invoice.confirm, user.create…"
+              placeholder={t("audit.action_placeholder")}
             />
           </div>
           <div className="space-y-1">
-            <Label>Entity</Label>
+            <Label>{t("audit.entity")}</Label>
             <Input
               value={entity}
               onChange={(e) => setEntity(e.target.value)}
-              placeholder="invoice, user…"
+              placeholder={t("audit.entity_placeholder")}
             />
           </div>
           <div className="flex items-end">
@@ -94,7 +97,7 @@ export default function AuditPage() {
                 void load();
               }}
             >
-              Appliquer
+              {t("audit.apply")}
             </Button>
           </div>
         </CardContent>
@@ -103,26 +106,26 @@ export default function AuditPage() {
       <Card>
         <CardHeader>
           <CardTitle className="text-lg">
-            Événements ({data?.total ?? 0})
+            {t("audit.events")} ({data?.total ?? 0})
           </CardTitle>
         </CardHeader>
         <CardContent>
           {loading ? (
-            <p className="text-sm text-muted-foreground">Chargement…</p>
+            <p className="text-sm text-muted-foreground">{tApp("loading")}</p>
           ) : data && data.items.length === 0 ? (
             <p className="py-6 text-center text-sm text-muted-foreground">
-              Aucun événement.
+              {t("audit.empty")}
             </p>
           ) : (
             <div className="overflow-x-auto">
               <table className="w-full text-sm">
                 <thead className="border-b text-left text-xs uppercase text-muted-foreground">
                   <tr>
-                    <th className="py-2">Date</th>
-                    <th className="py-2">Action</th>
-                    <th className="py-2">Entity</th>
-                    <th className="py-2">Entity ID</th>
-                    <th className="py-2">IP</th>
+                    <th className="py-2">{t("audit.col_date")}</th>
+                    <th className="py-2">{t("audit.col_action")}</th>
+                    <th className="py-2">{t("audit.col_entity")}</th>
+                    <th className="py-2">{t("audit.col_entity_id")}</th>
+                    <th className="py-2">{t("audit.col_ip")}</th>
                   </tr>
                 </thead>
                 <tbody className="divide-y">
@@ -147,7 +150,7 @@ export default function AuditPage() {
           {data && data.total > data.page_size && (
             <div className="mt-4 flex items-center justify-between text-sm text-muted-foreground">
               <span>
-                Page {data.page} / {pageCount} · {data.total} événement(s)
+                {t("audit.page_of", { page: data.page, pages: pageCount, count: data.total })}
               </span>
               <div className="flex gap-2">
                 <Button
@@ -156,7 +159,7 @@ export default function AuditPage() {
                   disabled={page <= 1}
                   onClick={() => setPage((p) => Math.max(1, p - 1))}
                 >
-                  ← Précédent
+                  {t("audit.prev")}
                 </Button>
                 <Button
                   variant="outline"
@@ -164,7 +167,7 @@ export default function AuditPage() {
                   disabled={page >= pageCount}
                   onClick={() => setPage((p) => Math.min(pageCount, p + 1))}
                 >
-                  Suivant →
+                  {t("audit.next")}
                 </Button>
               </div>
             </div>

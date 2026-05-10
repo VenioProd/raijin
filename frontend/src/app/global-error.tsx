@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect } from "react";
+import { useTranslations } from "next-intl";
 
 import { captureFrontendError } from "@/lib/sentry-lite";
 
@@ -11,6 +12,7 @@ export default function GlobalError({
   error: Error & { digest?: string };
   reset: () => void;
 }) {
+  const t = useTranslations("auth");
   useEffect(() => {
     captureFrontendError(error, { digest: error.digest });
   }, [error]);
@@ -20,12 +22,12 @@ export default function GlobalError({
       <body className="min-h-screen bg-background text-foreground">
         <main className="mx-auto flex min-h-screen max-w-xl flex-col justify-center px-6">
           <p className="font-serif text-sm italic text-primary">Raijin</p>
-          <h1 className="mt-3 text-3xl font-semibold">Une erreur est survenue</h1>
+          <h1 className="mt-3 text-3xl font-semibold">{t("global_error_title")}</h1>
           <p className="mt-3 text-sm text-muted-foreground">
-            L’incident a été transmis à l’équipe si le reporting est configuré.
+            {t("global_error_subtitle")}
           </p>
           <button className="btn-primary-violet mt-6 w-fit" onClick={reset}>
-            Réessayer
+            {t("retry")}
           </button>
         </main>
       </body>

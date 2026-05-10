@@ -2,6 +2,7 @@
 
 import { useEffect, useMemo, useState } from "react";
 import { Upload } from "lucide-react";
+import { useTranslations } from "next-intl";
 import { apiFetch } from "@/lib/api";
 import { getAccessToken } from "@/lib/auth";
 
@@ -34,6 +35,7 @@ function eur(value: string): string {
 }
 
 export default function ReportsPage() {
+  const t = useTranslations("reports");
   const currentYear = new Date().getFullYear();
   const [year, setYear] = useState(currentYear);
   const [quarter, setQuarter] = useState(1);
@@ -62,7 +64,7 @@ export default function ReportsPage() {
     });
     if (!res.ok) return;
     const data = (await res.json()) as { imported: number; matched: number };
-    setReconciliation(`${data.imported} ligne(s), ${data.matched} rapprochement(s)`);
+    setReconciliation(t("recon_summary", { imported: data.imported, matched: data.matched }));
     setAging(await apiFetch<AgingReport>("/reports/aging"));
   }
 
@@ -70,8 +72,8 @@ export default function ReportsPage() {
     <div className="space-y-6">
       <div className="flex flex-wrap items-start justify-between gap-3">
         <div>
-          <h1 className="font-serif-italic text-[30px] leading-none text-white/95">Rapports</h1>
-          <p className="mt-1 text-[13px] text-white/60">TVA, P&L, aging et rapprochement bancaire.</p>
+          <h1 className="font-serif-italic text-[30px] leading-none text-white/95">{t("title")}</h1>
+          <p className="mt-1 text-[13px] text-white/60">{t("subtitle")}</p>
         </div>
         <div className="glass flex items-center gap-2 p-2" style={{ borderRadius: 14 }}>
           <select
@@ -89,7 +91,7 @@ export default function ReportsPage() {
             className="h-9 rounded-lg border border-white/10 bg-white/[0.04] px-3 text-[13px] text-white"
           >
             {[1, 2, 3, 4].map((value) => (
-              <option key={value} value={value}>T{value}</option>
+              <option key={value} value={value}>{t("quarter_short", { n: value })}</option>
             ))}
           </select>
         </div>
@@ -98,25 +100,25 @@ export default function ReportsPage() {
       <section className="grid gap-4 lg:grid-cols-3">
         <div className="glass p-5" style={{ borderRadius: 18 }}>
           <div className="relative z-10">
-            <p className="text-[11px] font-semibold uppercase tracking-[0.12em] text-white/45">TVA</p>
+            <p className="text-[11px] font-semibold uppercase tracking-[0.12em] text-white/45">{t("vat")}</p>
             <p className="mt-4 font-mono text-2xl text-white/90">{eur(vat?.total_vat ?? "0")}</p>
-            <p className="mt-1 text-[12px] text-white/45">{vat?.invoice_count ?? 0} facture(s)</p>
+            <p className="mt-1 text-[12px] text-white/45">{t("invoice_count", { count: vat?.invoice_count ?? 0 })}</p>
           </div>
         </div>
         <div className="glass p-5" style={{ borderRadius: 18 }}>
           <div className="relative z-10">
-            <p className="text-[11px] font-semibold uppercase tracking-[0.12em] text-white/45">Dépenses HT</p>
+            <p className="text-[11px] font-semibold uppercase tracking-[0.12em] text-white/45">{t("expenses_excl_vat")}</p>
             <p className="mt-4 font-mono text-2xl text-white/90">{eur(vat?.total_ht ?? "0")}</p>
-            <p className="mt-1 text-[12px] text-white/45">Trimestre {quarter}</p>
+            <p className="mt-1 text-[12px] text-white/45">{t("quarter_label", { n: quarter })}</p>
           </div>
         </div>
         <div className="glass p-5" style={{ borderRadius: 18 }}>
           <div className="relative z-10">
-            <p className="text-[11px] font-semibold uppercase tracking-[0.12em] text-white/45">À payer</p>
+            <p className="text-[11px] font-semibold uppercase tracking-[0.12em] text-white/45">{t("outstanding")}</p>
             <p className="mt-4 font-mono text-2xl text-white/90">
               {eur(Object.values(aging?.buckets ?? {}).reduce((sum, value) => sum + Number(value), 0).toString())}
             </p>
-            <p className="mt-1 text-[12px] text-white/45">au {aging?.as_of ?? "-"}</p>
+            <p className="mt-1 text-[12px] text-white/45">{t("as_of", { date: aging?.as_of ?? "-" })}</p>
           </div>
         </div>
       </section>
@@ -124,28 +126,28 @@ export default function ReportsPage() {
       <section className="grid gap-4 lg:grid-cols-2">
         <div className="glass p-5" style={{ borderRadius: 18 }}>
           <div className="relative z-10 space-y-3">
-            <h2 className="text-[11px] font-semibold uppercase tracking-[0.12em] text-white/45">P&L mensuel</h2>
+            <h2 className="text-[11px] font-semibold uppercase tracking-[0.12em] text-white/45">{t("pl_monthly")}</h2>
             {(pl?.months ?? []).map((row) => (
               <div key={row.month} className="flex items-center justify-between rounded-lg border border-white/[0.06] bg-white/[0.02] px-3 py-2 text-sm">
                 <span className="text-white/70">{String(row.month).padStart(2, "0")}/{pl?.year}</span>
                 <span className="font-mono text-white/85">{eur(row.expense_ht)}</span>
               </div>
             ))}
-            {pl?.months.length === 0 && <p className="text-sm text-white/40">Aucune donnée confirmée.</p>}
+            {pl?.months.length === 0 && <p className="text-sm text-white/40">{t("no_data")}</p>}
           </div>
         </div>
         <div className="glass p-5" style={{ borderRadius: 18 }}>
           <div className="relative z-10 space-y-3">
-            <h2 className="text-[11px] font-semibold uppercase tracking-[0.12em] text-white/45">Aging</h2>
+            <h2 className="text-[11px] font-semibold uppercase tracking-[0.12em] text-white/45">{t("aging")}</h2>
             {Object.entries(aging?.buckets ?? {}).map(([bucket, value]) => (
               <div key={bucket} className="flex items-center justify-between rounded-lg border border-white/[0.06] bg-white/[0.02] px-3 py-2 text-sm">
-                <span className="text-white/70">{bucket} jours</span>
+                <span className="text-white/70">{t("bucket_days", { bucket })}</span>
                 <span className="font-mono text-white/85">{eur(value)}</span>
               </div>
             ))}
             <label className="btn-primary-violet w-fit cursor-pointer">
               <Upload className="h-3.5 w-3.5" />
-              Import banque CSV
+              {t("import_bank_csv")}
               <input type="file" accept=".csv,text/csv" className="hidden" onChange={(e) => uploadBank(e.target.files?.[0] ?? null)} />
             </label>
             {reconciliation && <p className="text-[12px] text-emerald-200">{reconciliation}</p>}

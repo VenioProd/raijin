@@ -2,6 +2,7 @@
 
 import { use, useEffect, useState } from "react";
 import { FileText } from "lucide-react";
+import { useTranslations } from "next-intl";
 import { apiFetch } from "@/lib/api";
 import type { InvoiceDetail } from "@/lib/types";
 import { StatusBadge } from "@/components/status-badge";
@@ -16,6 +17,7 @@ function money(value: string | null, currency: string): string {
 
 export default function PortalInvoicePage({ params }: { params: Promise<{ token: string }> }) {
   const { token } = use(params);
+  const t = useTranslations("portal");
   const [invoice, setInvoice] = useState<InvoiceDetail | null>(null);
   const [missing, setMissing] = useState(false);
 
@@ -29,7 +31,7 @@ export default function PortalInvoicePage({ params }: { params: Promise<{ token:
     return (
       <main className="flex min-h-screen items-center justify-center bg-[#050508] p-6 text-white">
         <div className="glass max-w-md p-6 text-center">
-          <p className="text-sm text-white/60">Lien expiré ou facture indisponible.</p>
+          <p className="text-sm text-white/60">{t("link_expired")}</p>
         </div>
       </main>
     );
@@ -38,7 +40,7 @@ export default function PortalInvoicePage({ params }: { params: Promise<{ token:
   if (!invoice) {
     return (
       <main className="flex min-h-screen items-center justify-center bg-[#050508] text-sm text-white/50">
-        Chargement...
+        {t("loading")}
       </main>
     );
   }
@@ -49,7 +51,7 @@ export default function PortalInvoicePage({ params }: { params: Promise<{ token:
         <header className="flex flex-wrap items-center justify-between gap-3">
           <div>
             <p className="text-[11px] font-semibold uppercase tracking-[0.12em] text-white/35">
-              Portail Raijin
+              {t("title")}
             </p>
             <h1 className="font-serif-italic text-[30px] leading-tight text-white/95">
               {invoice.invoice_number ?? invoice.source_file_name}
@@ -60,15 +62,15 @@ export default function PortalInvoicePage({ params }: { params: Promise<{ token:
 
         <section className="glass grid gap-5 p-5 md:grid-cols-3" style={{ borderRadius: 18 }}>
           <div className="relative z-10">
-            <p className="text-[11px] uppercase tracking-[0.12em] text-white/35">Fournisseur</p>
+            <p className="text-[11px] uppercase tracking-[0.12em] text-white/35">{t("supplier")}</p>
             <p className="mt-1 text-sm text-white/85">{invoice.supplier?.name ?? "-"}</p>
           </div>
           <div className="relative z-10">
-            <p className="text-[11px] uppercase tracking-[0.12em] text-white/35">Échéance</p>
+            <p className="text-[11px] uppercase tracking-[0.12em] text-white/35">{t("due_date")}</p>
             <p className="mt-1 text-sm text-white/85">{invoice.due_date ?? "-"}</p>
           </div>
           <div className="relative z-10">
-            <p className="text-[11px] uppercase tracking-[0.12em] text-white/35">Total TTC</p>
+            <p className="text-[11px] uppercase tracking-[0.12em] text-white/35">{t("total_ttc")}</p>
             <p className="mt-1 font-mono text-lg text-white/90">
               {money(invoice.total_ttc, invoice.currency)}
             </p>
@@ -79,7 +81,7 @@ export default function PortalInvoicePage({ params }: { params: Promise<{ token:
           <div className="glass p-5" style={{ borderRadius: 18 }}>
             <div className="relative z-10 space-y-3">
               <h2 className="text-[11px] font-semibold uppercase tracking-[0.12em] text-white/45">
-                Lignes
+                {t("lines")}
               </h2>
               {invoice.lines.map((line) => (
                 <div
@@ -97,15 +99,15 @@ export default function PortalInvoicePage({ params }: { params: Promise<{ token:
           <div className="glass p-5" style={{ borderRadius: 18 }}>
             <div className="relative z-10 space-y-3">
               <h2 className="text-[11px] font-semibold uppercase tracking-[0.12em] text-white/45">
-                Document
+                {t("document")}
               </h2>
               {invoice.file_url ? (
                 <a href={invoice.file_url} className="btn-primary-violet" target="_blank">
                   <FileText className="h-3.5 w-3.5" />
-                  Ouvrir le PDF
+                  {t("open_pdf")}
                 </a>
               ) : (
-                <p className="text-sm text-white/45">Aucun PDF disponible.</p>
+                <p className="text-sm text-white/45">{t("no_pdf")}</p>
               )}
             </div>
           </div>

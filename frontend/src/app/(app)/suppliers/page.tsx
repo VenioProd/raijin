@@ -4,6 +4,7 @@ import Link from "next/link";
 import type { FormEvent } from "react";
 import { useEffect, useMemo, useState } from "react";
 import { Plus, Search, X } from "lucide-react";
+import { useTranslations } from "next-intl";
 import { apiFetch } from "@/lib/api";
 
 interface Supplier {
@@ -69,6 +70,8 @@ function formatMoney(amount: number | null): string {
 }
 
 export default function SuppliersPage() {
+  const t = useTranslations("suppliers");
+  const tApp = useTranslations("app");
   const [data, setData] = useState<SupplierListResponse | null>(null);
   const [search, setSearch] = useState("");
   const [page, setPage] = useState(1);
@@ -85,7 +88,7 @@ export default function SuppliersPage() {
         setData(response);
         setError(null);
       })
-      .catch(() => setError("Impossible de charger les fournisseurs."));
+      .catch(() => setError(t("error_load")));
   };
 
   useEffect(() => {
@@ -117,7 +120,7 @@ export default function SuppliersPage() {
       await load();
       window.location.href = `/suppliers/${created.id}`;
     } catch {
-      setError("Impossible de créer ce fournisseur. Vérifie le VAT ou réessaie.");
+      setError(t("error_create"));
     } finally {
       setSaving(false);
     }
@@ -133,12 +136,12 @@ export default function SuppliersPage() {
       <div className="flex items-start justify-between">
         <div>
           <h1 className="font-serif-italic text-[30px] leading-none text-white/95">
-            Fournisseurs
+            {t("title")}
           </h1>
           <p className="mt-1 text-[13px] text-white/60">
             {data
-              ? `${data.total} fournisseur${data.total > 1 ? "s" : ""} actifs dans Venio`
-              : "Chargement…"}
+              ? t("count_active", { count: data.total })
+              : tApp("loading")}
           </p>
         </div>
         <div className="flex items-center gap-2">
@@ -150,7 +153,7 @@ export default function SuppliersPage() {
                 setSearch(e.target.value);
                 setPage(1);
               }}
-              placeholder="Rechercher un fournisseur ou un VAT…"
+              placeholder={t("search_placeholder")}
               className="h-10 w-[320px] rounded-lg border border-white/10 bg-white/[0.04] pl-8 pr-3 text-[13px] text-white placeholder:text-white/35 focus:border-violet-500/40 focus:outline-none focus:ring-2 focus:ring-violet-500/20"
             />
           </div>
@@ -160,7 +163,7 @@ export default function SuppliersPage() {
             className="btn-primary-violet"
           >
             {createOpen ? <X className="h-4 w-4" /> : <Plus className="h-4 w-4" />}
-            Nouveau
+            {t("new")}
           </button>
         </div>
       </div>
@@ -178,7 +181,7 @@ export default function SuppliersPage() {
               htmlFor="supplier-create-name"
               className="mb-1 block text-[11px] font-semibold uppercase tracking-[0.10em] text-white/35"
             >
-              Nom
+              {t("field_name")}
             </label>
             <input
               id="supplier-create-name"
@@ -193,7 +196,7 @@ export default function SuppliersPage() {
               htmlFor="supplier-create-vat"
               className="mb-1 block text-[11px] font-semibold uppercase tracking-[0.10em] text-white/35"
             >
-              VAT
+              {t("field_vat")}
             </label>
             <input
               id="supplier-create-vat"
@@ -207,7 +210,7 @@ export default function SuppliersPage() {
               htmlFor="supplier-create-country"
               className="mb-1 block text-[11px] font-semibold uppercase tracking-[0.10em] text-white/35"
             >
-              Pays
+              {t("field_country")}
             </label>
             <input
               id="supplier-create-country"
@@ -224,7 +227,7 @@ export default function SuppliersPage() {
               htmlFor="supplier-create-city"
               className="mb-1 block text-[11px] font-semibold uppercase tracking-[0.10em] text-white/35"
             >
-              Ville
+              {t("field_city")}
             </label>
             <input
               id="supplier-create-city"
@@ -238,7 +241,7 @@ export default function SuppliersPage() {
               htmlFor="supplier-create-email"
               className="mb-1 block text-[11px] font-semibold uppercase tracking-[0.10em] text-white/35"
             >
-              Email
+              {t("field_email")}
             </label>
             <input
               id="supplier-create-email"
@@ -252,12 +255,12 @@ export default function SuppliersPage() {
             <input
               value={form.phone}
               onChange={(e) => setForm((f) => ({ ...f, phone: e.target.value }))}
-              placeholder="Téléphone"
+              placeholder={t("field_phone")}
               className="h-10 w-full rounded-lg border border-white/10 bg-white/[0.04] px-3 text-[13px] text-white placeholder:text-white/35 focus:border-violet-500/40 focus:outline-none focus:ring-2 focus:ring-violet-500/20 md:max-w-[240px]"
             />
             <button type="submit" className="btn-primary-violet" disabled={saving}>
               <Plus className="h-4 w-4" />
-              {saving ? "Création…" : "Créer"}
+              {saving ? t("creating") : t("create")}
             </button>
           </div>
         </form>
@@ -269,12 +272,12 @@ export default function SuppliersPage() {
             <div className="flex flex-col items-center gap-3 py-14 text-center text-sm text-white/60">
               <p>
                 {search
-                  ? `Aucun fournisseur ne correspond à "${search}".`
-                  : "Aucun fournisseur pour le moment."}
+                  ? t("empty_search", { query: search })
+                  : t("empty")}
               </p>
               {!search && (
                 <Link href="/upload" className="btn-glass">
-                  Importer une facture
+                  {t("import_invoice")}
                 </Link>
               )}
             </div>
@@ -282,11 +285,11 @@ export default function SuppliersPage() {
             <table className="w-full text-sm">
               <thead className="border-b border-white/[0.06]">
                 <tr className="text-left text-[10px] font-semibold uppercase tracking-[0.10em] text-white/35">
-                  <th className="px-5 py-3">Nom</th>
-                  <th className="px-5 py-3">VAT</th>
-                  <th className="px-5 py-3">Ville</th>
-                  <th className="px-5 py-3">Factures</th>
-                  <th className="px-5 py-3 text-right">Total TTC</th>
+                  <th className="px-5 py-3">{t("field_name")}</th>
+                  <th className="px-5 py-3">{t("field_vat")}</th>
+                  <th className="px-5 py-3">{t("field_city")}</th>
+                  <th className="px-5 py-3">{t("col_invoices")}</th>
+                  <th className="px-5 py-3 text-right">{t("col_total_ttc")}</th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-white/[0.04]">
