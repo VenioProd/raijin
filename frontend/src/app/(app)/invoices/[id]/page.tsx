@@ -1,7 +1,7 @@
 "use client";
 
 import { useRouter } from "next/navigation";
-import { useCallback, useEffect, useMemo, useState } from "react";
+import { use, useCallback, useEffect, useMemo, useState } from "react";
 import Link from "next/link";
 import {
   ArrowLeft,
@@ -136,8 +136,8 @@ function ValidationBanner({
   );
 }
 
-export default function InvoiceReviewPage({ params }: { params: { id: string } }) {
-  const { id } = params;
+export default function InvoiceReviewPage({ params }: { params: Promise<{ id: string }> }) {
+  const { id } = use(params);
   const router = useRouter();
 
   const [invoice, setInvoice] = useState<InvoiceDetail | null>(null);

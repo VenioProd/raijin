@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import type { FormEvent } from "react";
-import { useCallback, useEffect, useState } from "react";
+import { use, useCallback, useEffect, useState } from "react";
 import { ArrowLeft, Edit3, GitMerge, Mail, MapPin, Phone, Save, Search, X } from "lucide-react";
 import { apiFetch } from "@/lib/api";
 import type { InvoiceStatus } from "@/lib/types";
@@ -134,8 +134,8 @@ function Kpi({
   );
 }
 
-export default function SupplierDetailPage({ params }: { params: { id: string } }) {
-  const { id } = params;
+export default function SupplierDetailPage({ params }: { params: Promise<{ id: string }> }) {
+  const { id } = use(params);
   const [supplier, setSupplier] = useState<Supplier | null>(null);
   const [stats, setStats] = useState<SupplierStats | null>(null);
   const [invoices, setInvoices] = useState<SupplierInvoiceItem[]>([]);

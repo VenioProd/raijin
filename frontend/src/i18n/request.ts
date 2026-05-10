@@ -7,8 +7,8 @@ export const defaultLocale = "fr";
 export type Locale = (typeof locales)[number];
 
 export default getRequestConfig(async () => {
-  const cookieLocale = cookies().get("raijin.locale")?.value;
-  const accepted = headers().get("accept-language") ?? "";
+  const cookieLocale = (await cookies()).get("raijin.locale")?.value;
+  const accepted = (await headers()).get("accept-language") ?? "";
   const browserLocale = locales.find((candidate) => accepted.toLowerCase().startsWith(candidate));
   const locale: Locale = locales.includes(cookieLocale as Locale)
     ? (cookieLocale as Locale)

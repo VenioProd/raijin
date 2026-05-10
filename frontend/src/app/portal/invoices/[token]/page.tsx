@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { use, useEffect, useState } from "react";
 import { FileText } from "lucide-react";
 import { apiFetch } from "@/lib/api";
 import type { InvoiceDetail } from "@/lib/types";
@@ -14,15 +14,16 @@ function money(value: string | null, currency: string): string {
     : value;
 }
 
-export default function PortalInvoicePage({ params }: { params: { token: string } }) {
+export default function PortalInvoicePage({ params }: { params: Promise<{ token: string }> }) {
+  const { token } = use(params);
   const [invoice, setInvoice] = useState<InvoiceDetail | null>(null);
   const [missing, setMissing] = useState(false);
 
   useEffect(() => {
-    apiFetch<InvoiceDetail>(`/portal/invoices/${params.token}`, { auth: false })
+    apiFetch<InvoiceDetail>(`/portal/invoices/${token}`, { auth: false })
       .then(setInvoice)
       .catch(() => setMissing(true));
-  }, [params.token]);
+  }, [token]);
 
   if (missing) {
     return (
