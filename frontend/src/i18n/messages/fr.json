@@ -671,7 +671,7 @@
       "idp_description": "Valeurs copiées depuis la configuration de ton IdP (Okta, Google Workspace, etc.).",
       "idp_entity_id_label": "IdP Entity ID",
       "idp_entity_id_placeholder": "ex. http://www.okta.com/exk...",
-      "sso_url_label": "URL SSO (Single Sign-On)",
+      "sso_url_label": "SSO URL (Single Sign-On)",
       "sso_url_placeholder": "ex. https://acme.okta.com/app/…/sso/saml",
       "certificate_label": "Certificat X.509 (clé publique IdP)",
       "enable_checkbox": "Activer la connexion SSO SAML pour ce tenant",
