@@ -61,6 +61,20 @@ downgrade: ## Rollback one migration
 psql: ## Open psql shell
 	$(COMPOSE) exec postgres psql -U raijin -d raijin
 
+.PHONY: seed
+seed: ## Seed the venio tenant with demo data (requires admin already registered)
+	$(COMPOSE) exec backend python -m app.scripts.seed_demo --tenant-slug venio --reset
+
+.PHONY: seed-client
+seed-client: ## Create the Acme Test client tenant + demo data (idempotent)
+	$(COMPOSE) exec backend python -m app.scripts.seed_demo \
+		--tenant-slug acme-test --create-admin \
+		--tenant-name "Acme Test" \
+		--admin-email demo@acme-test.com \
+		--admin-password 'ClientDemo2026!' \
+		--admin-name "Demo Client" \
+		--reset
+
 ## ─── Quality ─────────────────────────────────────────────────
 
 .PHONY: test
