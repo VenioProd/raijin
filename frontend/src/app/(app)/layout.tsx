@@ -3,12 +3,13 @@
 import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 import { useTranslations } from "next-intl";
+import { Zap } from "lucide-react";
 import { apiFetch } from "@/lib/api";
 import { clearTokens, getAccessToken } from "@/lib/auth";
 import type { User } from "@/lib/types";
-import { AmbientBg } from "@/components/app-shell/ambient-bg";
 import { Sidebar } from "@/components/app-shell/sidebar";
 import { CommandPaletteProvider } from "@/components/command-palette";
+import { ThemeProvider } from "@/components/theme-provider";
 
 export default function AppLayout({ children }: { children: React.ReactNode }) {
   const router = useRouter();
@@ -34,38 +35,42 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
 
   if (!ready) {
     return (
-      <div className="flex min-h-screen items-center justify-center bg-[#050508] text-sm text-white/50">
+      <div className="flex min-h-screen items-center justify-center bg-[#0a0a0d] text-sm text-white/50">
         {t("loading")}
       </div>
     );
   }
 
   return (
-    <CommandPaletteProvider>
-      <div className="raijin-shell relative min-h-screen overflow-hidden md:h-screen">
-        <AmbientBg />
-        <div className="relative z-10 flex min-h-screen w-full flex-col md:h-screen md:flex-row">
-          <div className="flex items-center justify-between border-b border-white/[0.08] bg-white/[0.025] px-4 py-3 backdrop-blur md:hidden">
-            <div className="flex items-center gap-2.5">
-              <div
-                className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg"
-                style={{
-                  background: "linear-gradient(135deg, #8b5cf6, #6366f1)",
-                  boxShadow: "0 0 20px rgba(139,92,246,0.35)",
-                }}
-              >
-                <span className="text-sm font-bold text-white">R</span>
+    <ThemeProvider>
+      <CommandPaletteProvider>
+        <div className="raijin-shell relative min-h-screen overflow-hidden md:h-screen">
+          <div className="relative z-10 flex min-h-screen w-full flex-col md:h-screen md:flex-row">
+            {/* Mobile-only top bar (sidebar is hidden below md) */}
+            <div
+              className="flex items-center justify-between border-b px-4 py-3 md:hidden"
+              style={{
+                background: "rgba(255, 255, 255, 0.025)",
+                borderColor: "var(--raijin-line)",
+              }}
+            >
+              <div className="flex items-center gap-2.5">
+                <div
+                  className="grid h-8 w-8 shrink-0 place-items-center rounded-lg"
+                  style={{ background: "var(--theme-accent)" }}
+                >
+                  <Zap className="h-4 w-4 text-white" />
+                </div>
+                <span className="text-base font-semibold tracking-tight text-white/95">Raijin</span>
               </div>
-              <span className="text-base font-semibold tracking-tight text-white/95">Raijin</span>
             </div>
-            <span className="raijin-kbd">Preview</span>
+            <Sidebar user={user} />
+            <main className="raijin-scroll relative flex-1 overflow-y-auto px-4 pb-8 pt-5 md:px-10 md:pb-16 md:pt-10">
+              <div className="mx-auto w-full max-w-[920px]">{children}</div>
+            </main>
           </div>
-          <Sidebar user={user} />
-          <main className="raijin-scroll relative flex-1 overflow-y-auto px-4 pb-8 pt-5 md:px-7 md:pb-10 md:pt-7">
-            {children}
-          </main>
         </div>
-      </div>
-    </CommandPaletteProvider>
+      </CommandPaletteProvider>
+    </ThemeProvider>
   );
 }

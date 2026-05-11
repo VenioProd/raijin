@@ -53,31 +53,70 @@
 }
 
 /* ────────────────────────────────────────────────────────────
-   Raijin — Liquid glass theme (dashboard + app shell)
+   Raijin — Sober portfolio theme
    ──────────────────────────────────────────────────────────── */
 
 :root {
-  --raijin-bg: #050508;
-  --glass-bg: rgba(255, 255, 255, 0.04);
-  --glass-bg-hover: rgba(255, 255, 255, 0.07);
-  --glass-border: rgba(255, 255, 255, 0.08);
-  --glass-border-hover: rgba(255, 255, 255, 0.14);
-  --glass-reflex: linear-gradient(
-    160deg,
-    rgba(255, 255, 255, 0.08) 0%,
-    rgba(255, 255, 255, 0.02) 30%,
-    transparent 60%
-  );
-  --raijin-accent: #8b5cf6;
-  --raijin-accent-indigo: #6366f1;
-  --raijin-accent-mint: #10b981;
-  --raijin-accent-warn: #f59e0b;
-  --raijin-accent-danger: #ef4444;
-  --raijin-text-primary: rgba(255, 255, 255, 0.95);
-  --raijin-text-secondary: rgba(255, 255, 255, 0.6);
-  --raijin-text-tertiary: rgba(255, 255, 255, 0.35);
+  --raijin-bg: #0a0a0d;
+  --raijin-bg-elev: #111114;
+  --raijin-line: rgba(255, 255, 255, 0.06);
+  --raijin-line-strong: rgba(255, 255, 255, 0.1);
+  --raijin-line-stronger: rgba(255, 255, 255, 0.16);
+
+  --raijin-text-primary: rgba(255, 255, 255, 0.96);
+  --raijin-text-secondary: rgba(255, 255, 255, 0.5);
+  --raijin-text-tertiary: rgba(255, 255, 255, 0.32);
+
+  /* Status colors — independent from theme accent */
+  --raijin-amber: #d97706;
+  --raijin-amber-soft: rgba(217, 119, 6, 0.16);
+  --raijin-green: #16a34a;
+  --raijin-green-soft: rgba(22, 163, 74, 0.16);
+  --raijin-red: #dc2626;
+  --raijin-red-soft: rgba(220, 38, 38, 0.16);
+  --raijin-blue: #2563eb;
+  --raijin-blue-soft: rgba(37, 99, 235, 0.16);
+  --raijin-gray: #525252;
+
   --raijin-ease: cubic-bezier(0.2, 0.8, 0.2, 1);
-  --raijin-transition: 300ms var(--raijin-ease);
+  --raijin-transition: 200ms var(--raijin-ease);
+
+  /* Theme accent — graphite default */
+  --theme-accent: #737373;
+  --theme-accent-strong: #a3a3a3;
+  --theme-accent-soft: rgba(115, 115, 115, 0.18);
+  --theme-accent-rgb: 115, 115, 115;
+}
+
+:root[data-theme="indigo"] {
+  --theme-accent: #6366f1;
+  --theme-accent-strong: #818cf8;
+  --theme-accent-soft: rgba(99, 102, 241, 0.2);
+  --theme-accent-rgb: 99, 102, 241;
+}
+:root[data-theme="forest"] {
+  --theme-accent: #15803d;
+  --theme-accent-strong: #22c55e;
+  --theme-accent-soft: rgba(21, 128, 61, 0.2);
+  --theme-accent-rgb: 21, 128, 61;
+}
+:root[data-theme="bronze"] {
+  --theme-accent: #a16207;
+  --theme-accent-strong: #ca8a04;
+  --theme-accent-soft: rgba(161, 98, 7, 0.2);
+  --theme-accent-rgb: 161, 98, 7;
+}
+:root[data-theme="wine"] {
+  --theme-accent: #9f1239;
+  --theme-accent-strong: #be123c;
+  --theme-accent-soft: rgba(159, 18, 57, 0.22);
+  --theme-accent-rgb: 159, 18, 57;
+}
+:root[data-theme="slate"] {
+  --theme-accent: #475569;
+  --theme-accent-strong: #64748b;
+  --theme-accent-soft: rgba(71, 85, 105, 0.22);
+  --theme-accent-rgb: 71, 85, 105;
 }
 
 .raijin-shell {
@@ -85,90 +124,7 @@
   color: var(--raijin-text-primary);
   min-height: 100vh;
   font-family: "Inter", system-ui, -apple-system, sans-serif;
-}
-
-/* Ambient blobs behind the glass */
-.raijin-ambient {
-  position: fixed;
-  inset: 0;
-  pointer-events: none;
-  z-index: 0;
-  overflow: hidden;
-}
-.raijin-blob {
-  position: absolute;
-  border-radius: 50%;
-  filter: blur(130px);
-  mix-blend-mode: screen;
-  animation: raijin-drift 22s ease-in-out infinite alternate;
-}
-.raijin-blob-1 {
-  width: 640px;
-  height: 640px;
-  top: -200px;
-  left: -140px;
-  background: radial-gradient(circle, rgba(99, 102, 241, 0.32) 0%, transparent 70%);
-}
-.raijin-blob-2 {
-  width: 720px;
-  height: 720px;
-  top: 28%;
-  left: 32%;
-  background: radial-gradient(circle, rgba(168, 85, 247, 0.22) 0%, transparent 70%);
-  animation-duration: 28s;
-  animation-delay: -8s;
-}
-.raijin-blob-3 {
-  width: 520px;
-  height: 520px;
-  bottom: -120px;
-  right: -90px;
-  background: radial-gradient(circle, rgba(236, 72, 153, 0.2) 0%, transparent 70%);
-  animation-duration: 19s;
-  animation-delay: -4s;
-}
-@keyframes raijin-drift {
-  0% {
-    transform: translate(0, 0) scale(1);
-  }
-  33% {
-    transform: translate(40px, -30px) scale(1.05);
-  }
-  66% {
-    transform: translate(-20px, 40px) scale(0.97);
-  }
-  100% {
-    transform: translate(30px, 20px) scale(1.03);
-  }
-}
-
-/* Reusable glass surface */
-.glass {
-  position: relative;
-  background: var(--glass-bg);
-  backdrop-filter: blur(40px) saturate(150%);
-  -webkit-backdrop-filter: blur(40px) saturate(150%);
-  border: 1px solid var(--glass-border);
-  border-radius: 22px;
-  overflow: hidden;
-  transition: var(--raijin-transition);
-}
-.glass::before {
-  content: "";
-  position: absolute;
-  inset: 0;
-  background: var(--glass-reflex);
-  pointer-events: none;
-}
-.glass-hover:hover {
-  background: var(--glass-bg-hover);
-  border-color: var(--glass-border-hover);
-  box-shadow: 0 0 40px rgba(139, 92, 246, 0.15);
-}
-
-/* Purple glow variant */
-.glass-glow {
-  box-shadow: 0 0 40px rgba(139, 92, 246, 0.12);
+  letter-spacing: -0.005em;
 }
 
 /* Buttons */
@@ -176,48 +132,64 @@
   display: inline-flex;
   align-items: center;
   gap: 6px;
-  background: linear-gradient(90deg, var(--raijin-accent), var(--raijin-accent-indigo));
+  background: var(--theme-accent);
   color: #fff;
   font-size: 13px;
   font-weight: 600;
-  padding: 9px 18px;
+  padding: 9px 16px;
   border-radius: 10px;
   border: none;
   cursor: pointer;
-  box-shadow: 0 10px 30px -10px rgba(139, 92, 246, 0.55);
   transition: var(--raijin-transition);
 }
 .btn-primary-violet:hover {
-  transform: translateY(-1px);
-  box-shadow: 0 14px 36px -10px rgba(139, 92, 246, 0.7);
+  background: var(--theme-accent-strong);
+}
+.btn-primary-violet:disabled {
+  opacity: 0.55;
+  cursor: not-allowed;
 }
 
 .btn-glass {
   display: inline-flex;
   align-items: center;
   gap: 6px;
-  background: rgba(255, 255, 255, 0.05);
-  border: 1px solid rgba(255, 255, 255, 0.1);
+  background: rgba(255, 255, 255, 0.04);
+  border: 1px solid var(--raijin-line);
   color: var(--raijin-text-secondary);
   font-size: 13px;
   font-weight: 500;
-  padding: 9px 18px;
+  padding: 9px 16px;
   border-radius: 10px;
   cursor: pointer;
   transition: var(--raijin-transition);
 }
 .btn-glass:hover {
-  background: rgba(255, 255, 255, 0.09);
-  border-color: rgba(255, 255, 255, 0.16);
+  background: rgba(255, 255, 255, 0.07);
+  border-color: var(--raijin-line-stronger);
   color: var(--raijin-text-primary);
+}
+
+/* shadcn "glass" class kept for backwards compat with screens we haven't refactored yet — now a flat surface */
+.glass {
+  position: relative;
+  background: rgba(255, 255, 255, 0.025);
+  border: 1px solid var(--raijin-line);
+  border-radius: 14px;
+  overflow: hidden;
+  transition: var(--raijin-transition);
+}
+.glass-hover:hover {
+  background: rgba(255, 255, 255, 0.04);
+  border-color: var(--raijin-line-strong);
 }
 
 /* Kbd */
 .raijin-kbd {
   font-family: "JetBrains Mono", monospace;
   font-size: 10px;
-  background: rgba(255, 255, 255, 0.06);
-  border: 1px solid var(--glass-border);
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid var(--raijin-line);
   border-radius: 4px;
   padding: 1px 5px;
   color: var(--raijin-text-tertiary);
@@ -238,8 +210,8 @@
 .font-serif-display {
   font-family: "Fraunces", Georgia, serif;
   font-variation-settings: "opsz" 144;
-  font-weight: 600;
-  letter-spacing: -0.04em;
+  font-weight: 500;
+  letter-spacing: -0.025em;
 }
 .font-serif-italic {
   font-family: "Fraunces", Georgia, serif;
@@ -250,7 +222,211 @@
   font-family: "JetBrains Mono", ui-monospace, monospace;
 }
 
-/* Dark mode pour inputs natifs (autofill, date picker, checkbox) */
+/* ────────────────────────────────────────────────────────────
+   V6 Portfolio (dashboard)
+   ──────────────────────────────────────────────────────────── */
+
+.v6-kicker {
+  font-size: 11px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  color: var(--raijin-text-tertiary);
+  margin: 0 0 8px;
+}
+.v6-hero {
+  font-family: "Fraunces", Georgia, serif;
+  font-weight: 400;
+  font-size: 72px;
+  line-height: 0.95;
+  letter-spacing: -0.03em;
+  margin: 0;
+  font-variant-numeric: tabular-nums;
+}
+.v6-delta {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  margin-top: 16px;
+  font-size: 18px;
+  font-weight: 600;
+  color: var(--raijin-green);
+  font-variant-numeric: tabular-nums;
+}
+.v6-delta.neg { color: var(--raijin-red); }
+.v6-delta .sec {
+  color: var(--raijin-text-tertiary);
+  font-weight: 500;
+  font-size: 14px;
+}
+
+.v6-chips {
+  display: inline-flex;
+  gap: 2px;
+  padding: 3px;
+  background: rgba(255, 255, 255, 0.04);
+  border-radius: 10px;
+  margin-top: 20px;
+}
+.v6-chip {
+  padding: 6px 12px;
+  border-radius: 8px;
+  font-size: 11px;
+  font-weight: 600;
+  color: var(--raijin-text-secondary);
+  letter-spacing: 0.01em;
+  background: transparent;
+  border: none;
+  cursor: pointer;
+  transition: var(--raijin-transition);
+}
+.v6-chip:hover { color: var(--raijin-text-primary); }
+.v6-chip.active {
+  background: rgba(255, 255, 255, 0.1);
+  color: var(--raijin-text-primary);
+}
+
+.v6-chart {
+  margin-top: 28px;
+  border-bottom: 1px solid var(--raijin-line);
+}
+.v6-chart svg { display: block; width: 100%; height: auto; }
+
+.v6-stats {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 0;
+  margin-top: 28px;
+  border-top: 1px solid var(--raijin-line);
+}
+.v6-stat {
+  padding: 14px 12px 14px 0;
+  border-bottom: 1px solid var(--raijin-line);
+}
+.v6-stat .k {
+  font-size: 11px;
+  color: var(--raijin-text-tertiary);
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  margin-bottom: 4px;
+}
+.v6-stat .v {
+  font-size: 16px;
+  font-weight: 600;
+  color: var(--raijin-text-primary);
+  font-variant-numeric: tabular-nums;
+}
+
+.v6-section-cap {
+  font-size: 11px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: var(--raijin-text-secondary);
+  margin: 36px 0 12px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+.v6-section-cap .right {
+  font-weight: 500;
+  text-transform: none;
+  letter-spacing: 0;
+  font-size: 12px;
+  color: var(--raijin-text-tertiary);
+}
+.v6-section-cap a.right:hover { color: var(--raijin-text-primary); }
+
+/* Watchlist row */
+.v6-row {
+  display: grid;
+  grid-template-columns: 1fr 100px 110px;
+  gap: 24px;
+  align-items: center;
+  padding: 12px 4px;
+  border-bottom: 1px solid var(--raijin-line);
+  text-decoration: none;
+  color: inherit;
+  transition: var(--raijin-transition);
+}
+.v6-row:hover { background: rgba(255, 255, 255, 0.02); }
+.v6-row .name {
+  font-size: 15px;
+  font-weight: 600;
+  color: var(--raijin-text-primary);
+  letter-spacing: -0.005em;
+}
+.v6-row .meta {
+  font-size: 12px;
+  color: var(--raijin-text-tertiary);
+  font-family: "JetBrains Mono", monospace;
+  margin-top: 4px;
+}
+
+.v6-spark { display: block; }
+
+.v6-block {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: flex-end;
+  padding: 8px 12px;
+  border-radius: 8px;
+  min-width: 92px;
+  text-align: right;
+  font-variant-numeric: tabular-nums;
+}
+.v6-block .big {
+  font-size: 14px;
+  font-weight: 700;
+  color: #fff;
+  letter-spacing: -0.005em;
+}
+.v6-block .small {
+  font-size: 10px;
+  font-weight: 500;
+  color: rgba(255, 255, 255, 0.85);
+  text-transform: lowercase;
+  margin-top: 1px;
+}
+.v6-block.amber { background: var(--raijin-amber); }
+.v6-block.green { background: var(--raijin-green); }
+.v6-block.red   { background: var(--raijin-red); }
+.v6-block.blue  { background: var(--raijin-blue); }
+.v6-block.gray  { background: var(--raijin-gray); }
+
+/* ────────────────────────────────────────────────────────────
+   Theme picker swatches
+   ──────────────────────────────────────────────────────────── */
+
+.theme-swatch {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 6px;
+  padding: 10px 8px;
+  border-radius: 10px;
+  border: 1px solid transparent;
+  background: transparent;
+  cursor: pointer;
+  transition: var(--raijin-transition);
+}
+.theme-swatch:hover { background: rgba(255, 255, 255, 0.04); }
+.theme-swatch.active { background: rgba(255, 255, 255, 0.05); border-color: var(--raijin-line-stronger); }
+.theme-swatch .dot {
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  border: 1px solid rgba(255, 255, 255, 0.12);
+}
+.theme-swatch .lbl {
+  font-size: 11px;
+  color: var(--raijin-text-secondary);
+  font-weight: 500;
+}
+.theme-swatch.active .lbl { color: var(--raijin-text-primary); }
+
+/* Dark mode pour inputs natifs */
 input,
 select,
 textarea {

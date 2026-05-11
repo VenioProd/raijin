@@ -3,6 +3,13 @@
 Usage :
     docker compose exec backend python -m app.scripts.seed_demo [--tenant-slug venio] [--reset]
 
+    # Créer un tenant client de test from scratch :
+    docker compose exec backend python -m app.scripts.seed_demo \
+        --tenant-slug acme-test --create-admin \
+        --tenant-name "Acme Test" \
+        --admin-email demo@acme-test.com --admin-password "ClientDemo2026!" \
+        --reset
+
 Crée ~35 factures avec statuts variés, ~5 suppliers, des lignes, des corrections
 et quelques audit logs. Idempotent par défaut (ne duplique pas).
 """
@@ -25,6 +32,7 @@ from raijin_shared.models.user import User
 from sqlalchemy import delete, select
 
 from app.core.database import SessionLocal
+from app.services.auth import EmailAlreadyExistsError, register_tenant_and_admin
 
 SUPPLIERS_DATA = [
     {
@@ -166,13 +174,42 @@ def _make_invoice_row(
     return invoice, lines
 
 
-async def seed(tenant_slug: str, reset: bool) -> None:
+async def seed(
+    tenant_slug: str,
+    reset: bool,
+    *,
+    create_admin: bool = False,
+    tenant_name: str | None = None,
+    admin_email: str | None = None,
+    admin_password: str | None = None,
+    admin_name: str | None = None,
+) -> None:
     async with SessionLocal() as session:
         tenant = await session.scalar(select(Tenant).where(Tenant.slug == tenant_slug))
         if tenant is None:
-            print(f"❌ Tenant introuvable : slug={tenant_slug}")
-            print("   → register un compte via /auth/register d'abord.")
-            return
+            if not create_admin:
+                print(f"❌ Tenant introuvable : slug={tenant_slug}")
+                print("   → register un compte via /auth/register d'abord,")
+                print("     ou relance avec --create-admin --admin-email … --admin-password …")
+                return
+            if not (admin_email and admin_password):
+                print("❌ --create-admin requiert --admin-email et --admin-password.")
+                return
+            try:
+                created = await register_tenant_and_admin(
+                    session,
+                    email=admin_email,
+                    password=admin_password,
+                    full_name=admin_name,
+                    tenant_name=tenant_name or tenant_slug.replace("-", " ").title(),
+                )
+            except EmailAlreadyExistsError:
+                print(f"❌ Email déjà utilisé : {admin_email}")
+                return
+            tenant = created.tenant
+            print(
+                f"✨ Tenant '{tenant.name}' (slug={tenant.slug}) créé avec admin {admin_email}"
+            )
 
         admin = await session.scalar(
             select(User)
@@ -356,8 +393,27 @@ def main() -> None:
     parser = argparse.ArgumentParser()
     parser.add_argument("--tenant-slug", default="venio", help="slug du tenant à seeder")
     parser.add_argument("--reset", action="store_true", help="supprime les données existantes")
+    parser.add_argument(
+        "--create-admin",
+        action="store_true",
+        help="crée le tenant + admin si absent (requiert --admin-email/--admin-password)",
+    )
+    parser.add_argument("--tenant-name", help="nom affiché du tenant (défaut: dérivé du slug)")
+    parser.add_argument("--admin-email", help="email de l'admin à créer")
+    parser.add_argument("--admin-password", help="mot de passe de l'admin à créer")
+    parser.add_argument("--admin-name", help="nom complet de l'admin")
     args = parser.parse_args()
-    asyncio.run(seed(args.tenant_slug, args.reset))
+    asyncio.run(
+        seed(
+            args.tenant_slug,
+            args.reset,
+            create_admin=args.create_admin,
+            tenant_name=args.tenant_name,
+            admin_email=args.admin_email,
+            admin_password=args.admin_password,
+            admin_name=args.admin_name,
+        )
+    )
 
 
 if __name__ == "__main__":

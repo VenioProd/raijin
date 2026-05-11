@@ -9,6 +9,7 @@ import type { ApiKey, User, UserSession } from "@/lib/types";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { PasswordInput } from "@/components/ui/password-input";
+import { ThemePicker } from "@/components/theme-picker";
 
 type Tab = "profile" | "security" | "preferences";
 
@@ -449,6 +450,11 @@ export default function SettingsPage() {
                 {t("save_language")}
               </button>
             </div>
+          </Section>
+
+          <Section title={t("appearance_title")} description={t("appearance_desc")}>
+            <ThemePicker />
+            <p className="text-[11px] text-white/35">{t("appearance_hint")}</p>
           </Section>
 
           <Section title={t("notifications_title")} description={t("notifications_desc")}>

@@ -42,6 +42,13 @@ export default async function RootLayout({ children }: { children: React.ReactNo
       suppressHydrationWarning
       className={`${inter.variable} ${fraunces.variable} ${jetbrains.variable}`}
     >
+      <head>
+        <script
+          dangerouslySetInnerHTML={{
+            __html: `(function(){try{var t=localStorage.getItem('raijin.theme');var v=['graphite','indigo','forest','bronze','wine','slate'];document.documentElement.setAttribute('data-theme', v.indexOf(t)>=0?t:'graphite');}catch(e){document.documentElement.setAttribute('data-theme','graphite');}})();`,
+          }}
+        />
+      </head>
       <body className="min-h-screen bg-background font-sans antialiased">
         <NextIntlClientProvider locale={locale} messages={messages}>
           <ErrorReporter />

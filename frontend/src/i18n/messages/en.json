@@ -4,7 +4,8 @@
     "tagline": "Invoice automation",
     "admin_badge": "admin",
     "loading": "Loading…",
-    "search_placeholder": "Search…"
+    "search_placeholder": "Search…",
+    "logout": "Sign out"
   },
   "nav": {
     "dashboard": "Dashboard",
@@ -171,7 +172,16 @@
     "export_downloaded": "Export downloaded",
     "export_failed": "Export failed",
     "error_with_status": "Error {status}",
-    "my_data_footer": "The export includes your profile, invoices, suppliers and sessions. Deletion is scheduled for +30 days and reversible during that period."
+    "my_data_footer": "The export includes your profile, invoices, suppliers and sessions. Deletion is scheduled for +30 days and reversible during that period.",
+    "appearance_title": "Appearance",
+    "appearance_desc": "Pick the interface accent color.",
+    "appearance_hint": "Preference is stored locally on this device.",
+    "theme_graphite": "Graphite",
+    "theme_indigo": "Indigo",
+    "theme_forest": "Forest",
+    "theme_bronze": "Bronze",
+    "theme_wine": "Wine",
+    "theme_slate": "Slate"
   },
   "dashboard": {
     "greeting": "Hello",
@@ -243,7 +253,23 @@
     "greeting_afternoon": "Good afternoon",
     "greeting_evening": "Good evening",
     "greeting_subtitle": "Venio · {count} invoices in total · syncing",
-    "greeting_subtitle_loading": "Venio · loading…"
+    "greeting_subtitle_loading": "Venio · loading…",
+    "portfolio_kicker": "Portfolio · Last 30 days",
+    "vs_previous": "vs previous 30 days",
+    "range_label": "Time range",
+    "stat_ht": "Subtotal",
+    "stat_tva": "VAT",
+    "stat_ttc": "Total",
+    "stat_pending": "To review",
+    "stat_median": "Median",
+    "stat_mean": "Average",
+    "stat_max": "Highest",
+    "stat_ocr": "OCR avg.",
+    "top_suppliers": "Top suppliers",
+    "see_all": "See all",
+    "no_suppliers_yet": "No suppliers yet.",
+    "invoice_count": "{count, plural, =0 {No invoices} one {# invoice} other {# invoices}}",
+    "invoice_count_short": "{count, plural, =0 {0 inv.} one {# inv.} other {# inv.}}"
   },
   "commandk": {
     "placeholder": "Search invoices, suppliers, pages…",

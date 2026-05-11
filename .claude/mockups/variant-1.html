@@ -1,0 +1,178 @@
+<!doctype html>
+<html lang="fr">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width,initial-scale=1" />
+    <title>Raijin — Watchlist · Variant 1</title>
+    <link rel="stylesheet" href="shared.css" />
+    <style>
+      /* Variant 1 specifics */
+      .v1-row .conf {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        font-size: 11px;
+        color: var(--fg-faint);
+        font-variant-numeric: tabular-nums;
+      }
+      .v1-row .bar {
+        width: 60px;
+        height: 4px;
+        border-radius: 2px;
+        background: rgba(255, 255, 255, 0.06);
+        overflow: hidden;
+      }
+      .v1-row .bar i {
+        display: block;
+        height: 100%;
+        background: linear-gradient(90deg, #34d399, #a78bfa);
+      }
+      .v1-row {
+        grid-template-columns: 1fr 100px auto auto;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="switcher">
+      <a href="variant-1.html" class="active">1 · Watchlist</a>
+      <a href="variant-2.html">2 · Hero</a>
+      <a href="variant-3.html">3 · Groupes</a>
+      <a href="variant-4.html">4 · Stocks pur</a>
+      <a href="variant-5.html">5 · Découvrir</a>
+      <a href="variant-6.html">6 · Portfolio</a>
+    </div>
+
+    <div class="shell">
+      <aside class="sidebar">
+        <div class="logo">⚡</div>
+        <div class="ico active" title="Factures">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="8" y1="13" x2="16" y2="13"/><line x1="8" y1="17" x2="14" y2="17"/></svg>
+        </div>
+        <div class="ico" title="Fournisseurs">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 21h18M5 21V7l8-4v18M19 21V11l-6-4"/></svg>
+        </div>
+        <div class="ico" title="Rapports">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="20" x2="12" y2="10"/><line x1="18" y1="20" x2="18" y2="4"/><line x1="6" y1="20" x2="6" y2="16"/></svg>
+        </div>
+        <div class="ico" title="Upload">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
+        </div>
+        <div class="sep"></div>
+        <div class="ico" title="Intégrations">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 12h-4l-3 9L9 3l-3 9H2"/></svg>
+        </div>
+        <div class="ico" title="Notifications">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/></svg>
+        </div>
+        <div class="spacer"></div>
+        <div class="avatar">RB</div>
+      </aside>
+
+      <main class="main">
+        <p class="caption">lundi 11 mai</p>
+        <h1 class="title">Factures</h1>
+        <p class="subtitle"><b>12</b> à valider · <b>84</b> ce mois · <b>94 %</b> OCR</p>
+
+        <div style="margin-top: 36px;">
+          <!-- Row 1 -->
+          <div class="row v1-row">
+            <div class="left">
+              <div class="name">Carrefour Pro</div>
+              <div class="meta">FAC-2026-0421 · 11 mai</div>
+            </div>
+            <div class="conf"><div class="bar"><i style="width:96%"></i></div>96%</div>
+            <div class="amount">1 248,40 €</div>
+            <div class="pill review">à valider</div>
+          </div>
+          <!-- Row 2 -->
+          <div class="row v1-row">
+            <div class="left">
+              <div class="name">EDF Entreprises</div>
+              <div class="meta">FAC-2026-0420 · 11 mai</div>
+            </div>
+            <div class="conf"><div class="bar"><i style="width:91%"></i></div>91%</div>
+            <div class="amount">842,00 €</div>
+            <div class="pill review">à valider</div>
+          </div>
+          <!-- Row 3 -->
+          <div class="row v1-row">
+            <div class="left">
+              <div class="name">Orange Business</div>
+              <div class="meta">FAC-2026-0419 · 10 mai</div>
+            </div>
+            <div class="conf"><div class="bar"><i style="width:88%"></i></div>88%</div>
+            <div class="amount">312,00 €</div>
+            <div class="pill confirmed">validée</div>
+          </div>
+          <!-- Row 4 -->
+          <div class="row v1-row">
+            <div class="left">
+              <div class="name">Bureau Vallée Paris 15</div>
+              <div class="meta">FAC-2026-0418 · 10 mai</div>
+            </div>
+            <div class="conf"><div class="bar"><i style="width:78%"></i></div>78%</div>
+            <div class="amount">187,90 €</div>
+            <div class="pill review">à valider</div>
+          </div>
+          <!-- Row 5 -->
+          <div class="row v1-row">
+            <div class="left">
+              <div class="name">SNCF Connect</div>
+              <div class="meta">FAC-2026-0417 · 09 mai</div>
+            </div>
+            <div class="conf"><div class="bar"><i style="width:99%"></i></div>99%</div>
+            <div class="amount">94,00 €</div>
+            <div class="pill confirmed">validée</div>
+          </div>
+          <!-- Row 6 -->
+          <div class="row v1-row">
+            <div class="left">
+              <div class="name">Microsoft 365</div>
+              <div class="meta">FAC-2026-0416 · 09 mai</div>
+            </div>
+            <div class="conf"><div class="bar"><i style="width:97%"></i></div>97%</div>
+            <div class="amount">540,00 €</div>
+            <div class="pill confirmed">validée</div>
+          </div>
+          <!-- Row 7 -->
+          <div class="row v1-row">
+            <div class="left">
+              <div class="name">Espresso Marvel SARL</div>
+              <div class="meta">FAC-2026-0415 · 09 mai</div>
+            </div>
+            <div class="conf"><div class="bar"><i style="width:64%"></i></div>64%</div>
+            <div class="amount">2 980,00 €</div>
+            <div class="pill rejected">à corriger</div>
+          </div>
+          <!-- Row 8 -->
+          <div class="row v1-row">
+            <div class="left">
+              <div class="name">Veolia Eau</div>
+              <div class="meta">FAC-2026-0414 · 08 mai</div>
+            </div>
+            <div class="conf"><div class="bar"><i style="width:92%"></i></div>92%</div>
+            <div class="amount">128,30 €</div>
+            <div class="pill review">à valider</div>
+          </div>
+        </div>
+
+        <div class="section-head">
+          <h3>Activité</h3>
+          <a class="see-all" href="#">Tout voir →</a>
+        </div>
+        <div class="activity">
+          <div class="act-card">
+            <div class="kicker">Outlook</div>
+            <div class="body">7 pièces jointes importées de la boîte <b>compta@venio.paris</b>.</div>
+            <div class="time">il y a 14 min</div>
+          </div>
+          <div class="act-card">
+            <div class="kicker">myDATA</div>
+            <div class="body">4 factures soumises à AADE, MARK reçus.</div>
+            <div class="time">il y a 1 h</div>
+          </div>
+        </div>
+      </main>
+    </div>
+  </body>
+</html>
