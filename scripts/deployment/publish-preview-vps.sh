@@ -67,6 +67,19 @@ fi
 # Older preview releases wrote ENVIRONMENT=preview, which is invalid for the backend settings.
 sed -i "s/^ENVIRONMENT=preview$/ENVIRONMENT=staging/" .env.production
 
+# Keep mutable preview metadata in sync on every deployment.
+CURRENT_RELEASE_VERSION="$(sed -n 's/^RELEASE_VERSION=//p' "$RELEASE/release.env" | head -n 1)"
+if grep -q '^RELEASE_VERSION=' .env.production; then
+  sed -i "s/^RELEASE_VERSION=.*/RELEASE_VERSION=$CURRENT_RELEASE_VERSION/" .env.production
+else
+  printf '\nRELEASE_VERSION=%s\n' "$CURRENT_RELEASE_VERSION" >> .env.production
+fi
+if grep -q '^NEXT_PUBLIC_RELEASE_VERSION=' .env.production; then
+  sed -i "s/^NEXT_PUBLIC_RELEASE_VERSION=.*/NEXT_PUBLIC_RELEASE_VERSION=$CURRENT_RELEASE_VERSION/" .env.production
+else
+  printf 'NEXT_PUBLIC_RELEASE_VERSION=%s\n' "$CURRENT_RELEASE_VERSION" >> .env.production
+fi
+
 cp "$RELEASE/docker-compose.preview.yml" docker-compose.preview.yml
 rm -rf shared
 cp -R "$RELEASE/shared" shared
@@ -115,8 +128,8 @@ http:
 EOF
 
 set -a
-. ./release.env
 . ./.env.production
+. ./release.env
 set +a
 docker compose -f docker-compose.preview.yml up -d --remove-orphans
 docker compose -f docker-compose.preview.yml ps
