@@ -68,7 +68,10 @@ cp "$RELEASE/docker-compose.preview.yml" docker-compose.preview.yml
 rm -rf shared
 cp -R "$RELEASE/shared" shared
 cp "$RELEASE/release.env" release.env
-docker load < "$RELEASE/raijin-preview-images.tar.gz"
+
+if [ -n "${RAIJIN_PREVIEW_GHCR_USER:-}" ] && [ -n "${RAIJIN_PREVIEW_GHCR_TOKEN:-}" ]; then
+  printf '%s' "$RAIJIN_PREVIEW_GHCR_TOKEN" | docker login ghcr.io -u "$RAIJIN_PREVIEW_GHCR_USER" --password-stdin
+fi
 
 mkdir -p /opt/docker/traefik/config/config
 cat > /opt/docker/traefik/config/config/raijin-preview.yml <<'EOF'

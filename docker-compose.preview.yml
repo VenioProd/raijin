@@ -28,7 +28,7 @@ services:
       retries: 5
 
   backend:
-    image: raijin-preview-backend:${RELEASE_VERSION}
+    image: ghcr.io/venioprod/raijin-preview-backend:${RELEASE_VERSION}
     container_name: raijin-preview-backend
     restart: unless-stopped
     env_file:
@@ -54,7 +54,7 @@ services:
       retries: 5
 
   worker:
-    image: raijin-preview-worker:${RELEASE_VERSION}
+    image: ghcr.io/venioprod/raijin-preview-worker:${RELEASE_VERSION}
     container_name: raijin-preview-worker
     restart: unless-stopped
     env_file:
@@ -71,7 +71,7 @@ services:
     command: celery -A app.celery_app worker --loglevel=info --concurrency=2 --max-tasks-per-child=100
 
   beat:
-    image: raijin-preview-worker:${RELEASE_VERSION}
+    image: ghcr.io/venioprod/raijin-preview-worker:${RELEASE_VERSION}
     container_name: raijin-preview-beat
     restart: unless-stopped
     env_file:
@@ -88,7 +88,7 @@ services:
     command: celery -A app.celery_app beat --loglevel=info
 
   frontend:
-    image: raijin-preview-frontend:${RELEASE_VERSION}
+    image: ghcr.io/venioprod/raijin-preview-frontend:${RELEASE_VERSION}
     container_name: raijin-preview-frontend
     restart: unless-stopped
     env_file:
