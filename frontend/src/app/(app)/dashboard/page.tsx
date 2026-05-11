@@ -114,7 +114,6 @@ export default function DashboardPage() {
 
   const chartValues = useMemo(() => {
     if (series.length >= 2) return series.map((p) => p.amount);
-    // graceful fallback : flat line if no series yet
     return [];
   }, [series]);
 
