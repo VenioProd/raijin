@@ -1,4 +1,4 @@
-name: 🚀 Preview temporaire Raijin
+name: Preview temporaire Raijin
 
 on:
   push:
@@ -15,8 +15,6 @@ concurrency:
 
 env:
   PREVIEW_PATH: /raijin
-  PREVIEW_API_PATH: /raijin-api
-  PREVIEW_URL: https://temporary.susanoo.app/raijin
   PREVIEW_API_URL: https://temporary.susanoo.app/raijin-api
 
 jobs:
@@ -24,19 +22,19 @@ jobs:
     name: Build GitHub puis publication preview
     runs-on: ubuntu-latest
     steps:
-      - name: 📥 Checkout
+      - name: Checkout
         uses: actions/checkout@v4
 
-      - name: 🐳 Setup Docker Buildx
+      - name: Setup Docker Buildx
         uses: docker/setup-buildx-action@v3
 
-      - name: 🏗️ Build backend image
+      - name: Build backend image
         run: docker build -t raijin-preview-backend:${{ github.sha }} ./backend
 
-      - name: 🏗️ Build worker image
+      - name: Build worker image
         run: docker build -t raijin-preview-worker:${{ github.sha }} ./workers
 
-      - name: 🏗️ Build frontend image
+      - name: Build frontend image
         run: |
           docker build \
             --build-arg NEXT_PUBLIC_API_URL="$PREVIEW_API_URL" \
@@ -46,10 +44,12 @@ jobs:
             -t raijin-preview-frontend:${{ github.sha }} \
             ./frontend
 
-      - name: 📦 Pack release artifacts
+      - name: Pack release artifacts
         run: |
-          mkdir -p release/shared
+          mkdir -p release/shared release/scripts/deployment
           cp docker-compose.preview.yml release/docker-compose.preview.yml
+          cp scripts/deployment/publish-preview-vps.sh release/scripts/deployment/publish-preview-vps.sh
+          chmod +x release/scripts/deployment/publish-preview-vps.sh
           cp -R shared/. release/shared/
           printf 'RELEASE_VERSION=%s\n' '${{ github.sha }}' > release/release.env
           docker save \
@@ -58,7 +58,7 @@ jobs:
             raijin-preview-frontend:${{ github.sha }} \
             | gzip > release/raijin-preview-images.tar.gz
 
-      - name: 📤 Upload release to VPS
+      - name: Upload release to VPS
         uses: appleboy/scp-action@v0.1.7
         with:
           host: ${{ secrets.RAIJIN_PREVIEW_SSH_HOST }}
@@ -68,7 +68,7 @@ jobs:
           target: "/opt/docker/raijin-preview/releases/${{ github.sha }}"
           strip_components: 1
 
-      - name: 🚀 Publish preview URL
+      - name: Publish preview URL
         uses: appleboy/ssh-action@v1.2.0
         with:
           host: ${{ secrets.RAIJIN_PREVIEW_SSH_HOST }}
@@ -77,132 +77,7 @@ jobs:
           script_stop: true
           script: |
             set -euo pipefail
-            BASE=/opt/docker/raijin-preview
-            RELEASE=$BASE/releases/${{ github.sha }}
-            mkdir -p "$BASE"
-            cd "$BASE"
-
-            if [ ! -f .env.production ]; then
-              JWT_SECRET=$(python3 - <<'PY'
-import secrets
-print(secrets.token_urlsafe(64))
-PY
-)
-              POSTGRES_PASSWORD=$(python3 - <<'PY'
-import secrets
-print(secrets.token_urlsafe(32))
-PY
-)
-              ENCRYPTION_KEY=$(python3 - <<'PY'
-import base64, os
-print(base64.urlsafe_b64encode(os.urandom(32)).decode())
-PY
-)
-              S3_SECRET_KEY=$(python3 - <<'PY'
-import secrets
-print(secrets.token_urlsafe(24))
-PY
-)
-              cat > .env.production <<EOF
-ENVIRONMENT=preview
-LOG_LEVEL=INFO
-RELEASE_VERSION=${{ github.sha }}
-SENTRY_DSN=
-SENTRY_TRACES_SAMPLE_RATE=0.0
-NEXT_PUBLIC_SENTRY_DSN=
-NEXT_PUBLIC_ENVIRONMENT=preview
-NEXT_PUBLIC_RELEASE_VERSION=${{ github.sha }}
-POSTGRES_USER=raijin
-POSTGRES_PASSWORD=$POSTGRES_PASSWORD
-POSTGRES_DB=raijin
-POSTGRES_HOST=postgres
-POSTGRES_PORT=5432
-DATABASE_URL=postgresql+asyncpg://raijin:$POSTGRES_PASSWORD@postgres:5432/raijin
-REDIS_URL=redis://redis:6379/0
-CELERY_BROKER_URL=redis://redis:6379/1
-CELERY_RESULT_BACKEND=redis://redis:6379/2
-S3_ENDPOINT_URL=
-S3_ACCESS_KEY=preview
-S3_SECRET_KEY=$S3_SECRET_KEY
-S3_BUCKET_INVOICES=raijin-preview-invoices
-S3_REGION=eu-west-1
-S3_SIGNED_URL_TTL_SECONDS=900
-JWT_SECRET=$JWT_SECRET
-JWT_ALGORITHM=HS256
-JWT_ACCESS_TTL_MINUTES=60
-JWT_REFRESH_TTL_DAYS=14
-AZURE_DI_ENDPOINT=
-AZURE_DI_KEY=
-AZURE_DI_MODEL=prebuilt-invoice
-AZURE_DI_LOCALE=el-GR
-UPLOAD_MAX_SIZE_MB=20
-UPLOAD_ALLOWED_MIME=application/pdf,image/jpeg,image/png
-RATE_LIMIT_LOGIN_PER_MIN=100
-RATE_LIMIT_REGISTER_PER_MIN=30
-NEXT_PUBLIC_API_URL=https://temporary.susanoo.app/raijin-api
-NEXT_PUBLIC_BASE_PATH=/raijin
-NEXT_PUBLIC_DEFAULT_LOCALE=fr
-ENCRYPTION_KEY=$ENCRYPTION_KEY
-MICROSOFT_CLIENT_ID=
-MICROSOFT_CLIENT_SECRET=
-MICROSOFT_TENANT=common
-MICROSOFT_REDIRECT_URI=https://temporary.susanoo.app/raijin-api/integrations/outlook/callback
-GOOGLE_CLIENT_ID=
-GOOGLE_CLIENT_SECRET=
-GOOGLE_REDIRECT_URI=https://temporary.susanoo.app/raijin-api/integrations/google/callback
-TRUSTED_PROXIES=127.0.0.1/32,172.16.0.0/12,10.0.0.0/8
-EOF
-              chmod 600 .env.production
-            fi
-
-            cp "$RELEASE/docker-compose.preview.yml" docker-compose.preview.yml
-            rm -rf shared
-            cp -R "$RELEASE/shared" shared
-            cp "$RELEASE/release.env" release.env
-            docker load < "$RELEASE/raijin-preview-images.tar.gz"
-
-            cat > /opt/docker/traefik/config/config/raijin-preview.yml <<'EOF'
-http:
-  middlewares:
-    raijin-api-strip:
-      stripPrefix:
-        prefixes:
-          - /raijin-api
-  routers:
-    raijin-preview-api:
-      entryPoints:
-        - websecure
-      rule: Host(`temporary.susanoo.app`) && PathPrefix(`/raijin-api`)
-      middlewares:
-        - raijin-api-strip
-      service: raijin-preview-backend
-      priority: 90
-      tls:
-        certResolver: letsencrypt-http
-    raijin-preview-frontend:
-      entryPoints:
-        - websecure
-      rule: Host(`temporary.susanoo.app`) && PathPrefix(`/raijin`)
-      service: raijin-preview-frontend
-      priority: 80
-      tls:
-        certResolver: letsencrypt-http
-  services:
-    raijin-preview-backend:
-      loadBalancer:
-        servers:
-          - url: http://127.0.0.1:34200
-    raijin-preview-frontend:
-      loadBalancer:
-        servers:
-          - url: http://127.0.0.1:34280
-EOF
-
-            set -a
-            . ./release.env
-            . ./.env.production
-            set +a
-            docker compose -f docker-compose.preview.yml up -d --remove-orphans
-            docker compose -f docker-compose.preview.yml ps
-
+            bash /opt/docker/raijin-preview/releases/${{ github.sha }}/scripts/deployment/publish-preview-vps.sh \
+              /opt/docker/raijin-preview \
+              /opt/docker/raijin-preview/releases/${{ github.sha }}
             echo "Preview published: https://temporary.susanoo.app/raijin"
