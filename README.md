@@ -94,15 +94,6 @@ cp .env.production.example .env.production  # puis remplir
 | `GET /metrics` | Snapshot métriques tenant (succès OCR, confidence, corrections) |
 | `GET /health`, `/health/db`, `/health/worker` | Probes |
 
-## Comptes de test
-
-| Tenant | Rôle | Email | Mot de passe | Provisionné par |
-|--------|------|-------|--------------|-----------------|
-| Venio | admin | `raphael@venio.paris` | `RaijinAdmin2026!` | `make seed` (après register manuel) |
-| Acme Test | admin | `demo@acme-test.com` | `ClientDemo2026!` | `make seed-client` |
-
-`make seed-client` est idempotent : il crée le tenant et l'admin s'ils n'existent pas, puis remplit ~35 factures démo, 5 fournisseurs, corrections, audit logs et notifications.
-
 ## Statuts d'une facture
 
 `uploaded → processing → ready_for_review → confirmed`

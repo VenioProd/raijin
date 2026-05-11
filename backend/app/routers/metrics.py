@@ -1,4 +1,4 @@
-from datetime import date, datetime, timedelta, timezone
+from datetime import UTC, date, datetime, timedelta
 from typing import Annotated
 
 from fastapi import APIRouter, Depends, Response
@@ -82,7 +82,7 @@ async def metrics(db: DbSession, user: CurrentUser) -> dict[str, object]:
     }
 
     # Daily TTC series for the last 30 days (zero-filled)
-    today = datetime.now(tz=timezone.utc).date()
+    today = datetime.now(tz=UTC).date()
     period_days = 30
     start = today - timedelta(days=period_days - 1)
     series_stmt = (
