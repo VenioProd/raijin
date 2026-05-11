@@ -13,7 +13,7 @@ if [ ! -f .env.production ]; then
   ENCRYPTION_KEY="$(openssl rand -base64 32 | tr '+/' '-_')"
   S3_SECRET_KEY="$(openssl rand -base64 24 | tr -d '\n' | tr '+/' '-_')"
   cat > .env.production <<EOF
-ENVIRONMENT=preview
+ENVIRONMENT=staging
 LOG_LEVEL=INFO
 RELEASE_VERSION=$(cat "$RELEASE/release.env" | sed 's/^RELEASE_VERSION=//')
 SENTRY_DSN=
@@ -63,6 +63,9 @@ TRUSTED_PROXIES=127.0.0.1/32,172.16.0.0/12,10.0.0.0/8
 EOF
   chmod 600 .env.production
 fi
+
+# Older preview releases wrote ENVIRONMENT=preview, which is invalid for the backend settings.
+sed -i "s/^ENVIRONMENT=preview$/ENVIRONMENT=staging/" .env.production
 
 cp "$RELEASE/docker-compose.preview.yml" docker-compose.preview.yml
 rm -rf shared
