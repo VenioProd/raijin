@@ -9,6 +9,7 @@ from raijin_shared.models.user import User, UserRole
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 
+from app.core.client_ip import get_client_ip
 from app.core.database import get_db
 from app.core.security import decode_token
 from app.services.security_management import authenticate_api_key
@@ -70,8 +71,7 @@ async def _enforce_ip_rules(db: AsyncSession, *, user: User, request: Request) -
     cidrs = [rule.cidr for rule in rules.all()]
     if not cidrs:
         return
-    raw_ip = request.headers.get("x-forwarded-for", "").split(",")[0].strip()
-    raw_ip = raw_ip or (request.client.host if request.client else "")
+    raw_ip = get_client_ip(request) or ""
     try:
         client_ip = ipaddress.ip_address(raw_ip)
     except ValueError as exc:

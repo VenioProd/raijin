@@ -24,6 +24,8 @@ from app.core.permissions import RequireAdmin
 from app.services.security_management import (
     backup_code,
     create_api_key,
+    decrypt_totp_secret,
+    encrypt_totp_secret,
     generate_totp_secret,
     hash_secret,
     totp_uri,
@@ -179,7 +181,7 @@ async def revoke_session(session_id: uuid.UUID, db: DbSession, user: CurrentUser
 async def setup_totp(db: DbSession, user: CurrentUser) -> TotpSetupOut:
     secret = generate_totp_secret()
     codes = [backup_code() for _ in range(8)]
-    user.totp_secret_encrypted = secret
+    user.totp_secret_encrypted = encrypt_totp_secret(secret)
     user.backup_codes = [hash_secret(code) for code in codes]
     user.totp_enabled = False
     await db.commit()
@@ -192,9 +194,10 @@ async def setup_totp(db: DbSession, user: CurrentUser) -> TotpSetupOut:
 
 @router.post("/totp/enable", status_code=204)
 async def enable_totp(body: TotpEnableIn, db: DbSession, user: CurrentUser) -> None:
-    if not user.totp_secret_encrypted:
+    secret = decrypt_totp_secret(user.totp_secret_encrypted)
+    if not secret:
         raise HTTPException(status_code=400, detail="totp_not_setup")
-    if not verify_totp_code(user.totp_secret_encrypted, body.code):
+    if not verify_totp_code(secret, body.code):
         raise HTTPException(status_code=400, detail="invalid_totp_code")
     user.totp_enabled = True
     await db.commit()

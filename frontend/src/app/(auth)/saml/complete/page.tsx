@@ -2,9 +2,11 @@
 
 import { useEffect } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
+import { useTranslations } from "next-intl";
 import { setTokens } from "@/lib/auth";
 
 export default function SamlCompletePage() {
+  const t = useTranslations("auth");
   const router = useRouter();
   const params = useSearchParams();
 
@@ -21,7 +23,7 @@ export default function SamlCompletePage() {
 
   return (
     <div className="glass p-8 text-center text-white/70" style={{ borderRadius: 22 }}>
-      Connexion SSO en cours…
+      {t("sso_in_progress")}
     </div>
   );
 }

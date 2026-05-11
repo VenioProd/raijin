@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import { useTranslations } from "next-intl";
 import { Document, Page, pdfjs } from "react-pdf";
 import "react-pdf/dist/Page/AnnotationLayer.css";
 import "react-pdf/dist/Page/TextLayer.css";
@@ -10,6 +11,7 @@ if (typeof window !== "undefined") {
 }
 
 export function PdfPreview({ url, mime }: { url: string; mime: string }) {
+  const t = useTranslations("invoice_review");
   const [numPages, setNumPages] = useState(0);
   const [width, setWidth] = useState(600);
 
@@ -22,7 +24,7 @@ export function PdfPreview({ url, mime }: { url: string; mime: string }) {
     return (
       <div className="flex h-full items-center justify-center bg-muted/20">
         {/* eslint-disable-next-line @next/next/no-img-element */}
-        <img src={url} alt="Facture" className="max-h-full max-w-full object-contain" />
+        <img src={url} alt={t("invoice_image_alt")} className="max-h-full max-w-full object-contain" />
       </div>
     );
   }
@@ -33,10 +35,10 @@ export function PdfPreview({ url, mime }: { url: string; mime: string }) {
         file={url}
         onLoadSuccess={({ numPages }) => setNumPages(numPages)}
         loading={
-          <p className="text-center text-sm text-muted-foreground">Chargement du PDF…</p>
+          <p className="text-center text-sm text-muted-foreground">{t("pdf_loading")}</p>
         }
         error={
-          <p className="text-center text-sm text-destructive">Impossible d&apos;afficher le PDF.</p>
+          <p className="text-center text-sm text-destructive">{t("pdf_error")}</p>
         }
       >
         {Array.from({ length: numPages }, (_, i) => (

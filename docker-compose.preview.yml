@@ -1,0 +1,103 @@
+services:
+  postgres:
+    image: postgres:16-alpine
+    container_name: raijin-preview-postgres
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: ${POSTGRES_USER}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+      POSTGRES_DB: ${POSTGRES_DB}
+    volumes:
+      - raijin_preview_postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U $${POSTGRES_USER} -d $${POSTGRES_DB}"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  redis:
+    image: redis:7-alpine
+    container_name: raijin-preview-redis
+    restart: unless-stopped
+    volumes:
+      - raijin_preview_redis_data:/data
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  backend:
+    image: ghcr.io/venioprod/raijin-preview-backend:${RELEASE_VERSION}
+    container_name: raijin-preview-backend
+    restart: unless-stopped
+    env_file:
+      - .env.production
+    environment:
+      PYTHONPATH: "/shared:/app"
+    volumes:
+      - ./shared:/shared:ro
+    ports:
+      - "127.0.0.1:34200:8000"
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    command: >
+      sh -c "alembic upgrade head &&
+             uvicorn app.main:app --host 0.0.0.0 --port 8000 --workers 2 --proxy-headers"
+    healthcheck:
+      test: ["CMD", "python", "-c", "import urllib.request; urllib.request.urlopen('http://localhost:8000/health')"]
+      interval: 30s
+      timeout: 5s
+      retries: 5
+
+  worker:
+    image: ghcr.io/venioprod/raijin-preview-worker:${RELEASE_VERSION}
+    container_name: raijin-preview-worker
+    restart: unless-stopped
+    env_file:
+      - .env.production
+    environment:
+      PYTHONPATH: "/shared:/app"
+    volumes:
+      - ./shared:/shared:ro
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    command: celery -A app.celery_app worker --loglevel=info --concurrency=2 --max-tasks-per-child=100
+
+  beat:
+    image: ghcr.io/venioprod/raijin-preview-worker:${RELEASE_VERSION}
+    container_name: raijin-preview-beat
+    restart: unless-stopped
+    env_file:
+      - .env.production
+    environment:
+      PYTHONPATH: "/shared:/app"
+    volumes:
+      - ./shared:/shared:ro
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    command: celery -A app.celery_app beat --loglevel=info
+
+  frontend:
+    image: ghcr.io/venioprod/raijin-preview-frontend:${RELEASE_VERSION}
+    container_name: raijin-preview-frontend
+    restart: unless-stopped
+    env_file:
+      - .env.production
+    ports:
+      - "127.0.0.1:34280:3000"
+    depends_on:
+      - backend
+
+volumes:
+  raijin_preview_postgres_data:
+  raijin_preview_redis_data:

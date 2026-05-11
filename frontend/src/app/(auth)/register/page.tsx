@@ -4,6 +4,7 @@ import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { useState } from "react";
 import { Zap } from "lucide-react";
+import { useTranslations } from "next-intl";
 import { ApiError, apiFetch } from "@/lib/api";
 import { setTokens } from "@/lib/auth";
 import type { TokenPair } from "@/lib/types";
@@ -13,6 +14,7 @@ import { PasswordInput } from "@/components/ui/password-input";
 
 export default function RegisterPage() {
   const router = useRouter();
+  const t = useTranslations("auth");
   const [fullName, setFullName] = useState("");
   const [tenantName, setTenantName] = useState("");
   const [email, setEmail] = useState("");
@@ -39,9 +41,9 @@ export default function RegisterPage() {
       router.push("/dashboard");
     } catch (err) {
       if (err instanceof ApiError && err.status === 409) {
-        setError("Un compte existe déjà avec cet email.");
+        setError(t("email_already_exists"));
       } else {
-        setError("Impossible de créer le compte.");
+        setError(t("register_failed"));
       }
     } finally {
       setLoading(false);
@@ -67,16 +69,16 @@ export default function RegisterPage() {
           <span className="text-[18px] font-semibold tracking-tight text-white/95">Raijin</span>
         </div>
         <h1 className="font-serif-italic text-[28px] leading-tight text-white/95">
-          Créer un compte
+          {t("register_title")}
         </h1>
         <p className="mt-1 text-[13px] text-white/60">
-          Démarre ton espace Raijin en 30 secondes.
+          {t("register_subtitle")}
         </p>
 
         <form onSubmit={handleSubmit} className="mt-6 space-y-4">
           <div className="space-y-2">
             <Label htmlFor="tenant" className="text-white/80">
-              Entreprise
+              {t("company")}
             </Label>
             <Input
               id="tenant"
@@ -88,7 +90,7 @@ export default function RegisterPage() {
           </div>
           <div className="space-y-2">
             <Label htmlFor="full_name" className="text-white/80">
-              Nom complet
+              {t("full_name")}
             </Label>
             <Input
               id="full_name"
@@ -99,7 +101,7 @@ export default function RegisterPage() {
           </div>
           <div className="space-y-2">
             <Label htmlFor="email" className="text-white/80">
-              Email
+              {t("email")}
             </Label>
             <Input
               id="email"
@@ -113,7 +115,7 @@ export default function RegisterPage() {
           </div>
           <div className="space-y-2">
             <Label htmlFor="password" className="text-white/80">
-              Mot de passe
+              {t("password")}
             </Label>
             <PasswordInput
               id="password"
@@ -124,7 +126,7 @@ export default function RegisterPage() {
               onChange={(e) => setPassword(e.target.value)}
               className={inputClass}
             />
-            <p className="text-[11px] text-white/45">Au moins 8 caractères.</p>
+            <p className="text-[11px] text-white/45">{t("password_min_chars")}</p>
           </div>
           {error && <p className="text-[13px] text-rose-400">{error}</p>}
           <button
@@ -132,15 +134,15 @@ export default function RegisterPage() {
             disabled={loading}
             className="btn-primary-violet w-full justify-center disabled:opacity-60"
           >
-            {loading ? "Création…" : "Créer mon compte"}
+            {loading ? t("creating_account") : t("submit_register")}
           </button>
           <p className="text-center text-[13px] text-white/60">
-            Déjà un compte ?{" "}
+            {t("already_have_account")}{" "}
             <Link
               href="/login"
               className="font-medium text-violet-300 underline-offset-4 hover:underline"
             >
-              Se connecter
+              {t("submit_login")}
             </Link>
           </p>
         </form>

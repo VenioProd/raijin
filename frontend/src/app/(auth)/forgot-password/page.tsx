@@ -3,6 +3,7 @@
 import Link from "next/link";
 import { useState } from "react";
 import { Mail, Zap } from "lucide-react";
+import { useTranslations } from "next-intl";
 import { apiFetch } from "@/lib/api";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -13,6 +14,7 @@ interface ForgotPasswordResponse {
 }
 
 export default function ForgotPasswordPage() {
+  const t = useTranslations("auth");
   const [email, setEmail] = useState("");
   const [sent, setSent] = useState(false);
   const [devLink, setDevLink] = useState<string | null>(null);
@@ -32,7 +34,7 @@ export default function ForgotPasswordPage() {
       setSent(true);
       setDevLink(response.reset_link);
     } catch {
-      setError("Impossible d'envoyer le lien pour le moment.");
+      setError(t("forgot_send_failed"));
     } finally {
       setLoading(false);
     }
@@ -54,16 +56,16 @@ export default function ForgotPasswordPage() {
           <span className="text-[18px] font-semibold tracking-tight text-white/95">Raijin</span>
         </div>
         <h1 className="font-serif-italic text-[28px] leading-tight text-white/95">
-          Mot de passe oublié
+          {t("forgot_password_title")}
         </h1>
         <p className="mt-1 text-[13px] text-white/60">
-          Entre ton email, on t&apos;envoie un lien valable 1 heure.
+          {t("forgot_password_subtitle")}
         </p>
 
         <form onSubmit={handleSubmit} className="mt-6 space-y-4">
           <div className="space-y-2">
             <Label htmlFor="email" className="text-white/80">
-              Email
+              {t("email")}
             </Label>
             <Input
               id="email"
@@ -78,14 +80,14 @@ export default function ForgotPasswordPage() {
           {error && <p className="text-[13px] text-rose-400">{error}</p>}
           {sent && (
             <div className="rounded-lg border border-emerald-400/20 bg-emerald-400/10 px-3 py-2 text-[13px] text-emerald-100">
-              Email envoyé si ce compte existe.
+              {t("forgot_password_sent")}
               {devLink && (
                 <a
                   href={devLink}
                   className="mt-2 flex items-center gap-2 font-medium text-violet-200 underline-offset-4 hover:underline"
                 >
                   <Mail className="h-4 w-4" />
-                  Ouvrir le lien de reset dev
+                  {t("open_dev_reset_link")}
                 </a>
               )}
             </div>
@@ -95,14 +97,14 @@ export default function ForgotPasswordPage() {
             disabled={loading}
             className="btn-primary-violet w-full justify-center disabled:opacity-60"
           >
-            {loading ? "Envoi…" : "Envoyer le lien"}
+            {loading ? t("sending_link") : t("send_link")}
           </button>
           <p className="text-center text-[13px] text-white/60">
             <Link
               href="/login"
               className="font-medium text-violet-300 underline-offset-4 hover:underline"
             >
-              Retour connexion
+              {t("back_to_login")}
             </Link>
           </p>
         </form>

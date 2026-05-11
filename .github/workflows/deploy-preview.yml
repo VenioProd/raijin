@@ -1,0 +1,95 @@
+name: Preview temporaire Raijin
+
+on:
+  push:
+    branches:
+      - main
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  packages: write
+
+concurrency:
+  group: raijin-preview
+  cancel-in-progress: true
+
+env:
+  PREVIEW_PATH: /raijin
+  PREVIEW_API_URL: https://temporary.susanoo.app/raijin-api
+  IMAGE_PREFIX: ghcr.io/venioprod
+
+jobs:
+  build-and-deploy:
+    name: Build GitHub puis publication preview
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: Login to GHCR
+        uses: docker/login-action@v3
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Build and push backend image
+        run: |
+          docker build -t $IMAGE_PREFIX/raijin-preview-backend:${{ github.sha }} ./backend
+          docker push $IMAGE_PREFIX/raijin-preview-backend:${{ github.sha }}
+
+      - name: Build and push worker image
+        run: |
+          docker build -t $IMAGE_PREFIX/raijin-preview-worker:${{ github.sha }} ./workers
+          docker push $IMAGE_PREFIX/raijin-preview-worker:${{ github.sha }}
+
+      - name: Build and push frontend image
+        run: |
+          docker build \
+            --build-arg NEXT_PUBLIC_API_URL="$PREVIEW_API_URL" \
+            --build-arg NEXT_PUBLIC_BASE_PATH="$PREVIEW_PATH" \
+            --build-arg NEXT_PUBLIC_ENVIRONMENT="preview" \
+            --build-arg NEXT_PUBLIC_RELEASE_VERSION="${{ github.sha }}" \
+            -t $IMAGE_PREFIX/raijin-preview-frontend:${{ github.sha }} \
+            ./frontend
+          docker push $IMAGE_PREFIX/raijin-preview-frontend:${{ github.sha }}
+
+      - name: Pack deployment files
+        run: |
+          mkdir -p release/shared release/scripts/deployment
+          cp docker-compose.preview.yml release/docker-compose.preview.yml
+          cp scripts/deployment/publish-preview-vps.sh release/scripts/deployment/publish-preview-vps.sh
+          chmod +x release/scripts/deployment/publish-preview-vps.sh
+          cp -R shared/. release/shared/
+          printf 'RELEASE_VERSION=%s\n' '${{ github.sha }}' > release/release.env
+
+      - name: Upload deployment files to VPS
+        uses: appleboy/scp-action@v0.1.7
+        with:
+          host: ${{ secrets.RAIJIN_PREVIEW_SSH_HOST }}
+          username: ${{ secrets.RAIJIN_PREVIEW_SSH_USER }}
+          key: ${{ secrets.RAIJIN_PREVIEW_SSH_KEY }}
+          source: "release/*"
+          target: "/opt/docker/raijin-preview/releases/${{ github.sha }}"
+          strip_components: 1
+
+      - name: Publish preview URL
+        uses: appleboy/ssh-action@v1.2.0
+        with:
+          host: ${{ secrets.RAIJIN_PREVIEW_SSH_HOST }}
+          username: ${{ secrets.RAIJIN_PREVIEW_SSH_USER }}
+          key: ${{ secrets.RAIJIN_PREVIEW_SSH_KEY }}
+          script_stop: true
+          envs: RAIJIN_PREVIEW_GHCR_USER,RAIJIN_PREVIEW_GHCR_TOKEN
+          script: |
+            set -euo pipefail
+            export RAIJIN_PREVIEW_GHCR_USER='${{ secrets.RAIJIN_PREVIEW_GHCR_USER }}'
+            export RAIJIN_PREVIEW_GHCR_TOKEN='${{ secrets.RAIJIN_PREVIEW_GHCR_TOKEN }}'
+            bash /opt/docker/raijin-preview/releases/${{ github.sha }}/scripts/deployment/publish-preview-vps.sh \
+              /opt/docker/raijin-preview \
+              /opt/docker/raijin-preview/releases/${{ github.sha }}
+            echo "Preview published: https://temporary.susanoo.app/raijin"

@@ -3,6 +3,7 @@
 import { useEffect, useState } from "react";
 import { Key, Shield, Sparkles, UserCircle } from "lucide-react";
 import { toast } from "sonner";
+import { useTranslations } from "next-intl";
 import { ApiError, apiFetch } from "@/lib/api";
 import type { ApiKey, User, UserSession } from "@/lib/types";
 import { Input } from "@/components/ui/input";
@@ -10,12 +11,6 @@ import { Label } from "@/components/ui/label";
 import { PasswordInput } from "@/components/ui/password-input";
 
 type Tab = "profile" | "security" | "preferences";
-
-const TABS: { value: Tab; label: string; icon: React.ComponentType<{ className?: string }> }[] = [
-  { value: "profile", label: "Profil", icon: UserCircle },
-  { value: "security", label: "Sécurité", icon: Shield },
-  { value: "preferences", label: "Préférences", icon: Sparkles },
-];
 
 const inputClass =
   "h-10 w-full rounded-lg border border-white/10 bg-white/[0.04] px-3 text-[13px] text-white placeholder:text-white/35 focus:border-violet-500/40 focus:outline-none focus:ring-1 focus:ring-violet-500/30 disabled:opacity-60";
@@ -45,6 +40,9 @@ function Section({
 }
 
 export default function SettingsPage() {
+  const t = useTranslations("settings");
+  const tApp = useTranslations("app");
+  const tCommon = useTranslations("common");
   const [user, setUser] = useState<User | null>(null);
   const [tab, setTab] = useState<Tab>("profile");
 
@@ -65,6 +63,12 @@ export default function SettingsPage() {
   const [backupCodes, setBackupCodes] = useState<string[]>([]);
   const [notificationPrefs, setNotificationPrefs] = useState<Record<string, { in_app: boolean; email: boolean }>>({});
 
+  const TABS: { value: Tab; label: string; icon: React.ComponentType<{ className?: string }> }[] = [
+    { value: "profile", label: t("tab_profile"), icon: UserCircle },
+    { value: "security", label: t("tab_security"), icon: Shield },
+    { value: "preferences", label: t("tab_preferences"), icon: Sparkles },
+  ];
+
   useEffect(() => {
     apiFetch<User>("/auth/me")
       .then((u) => {
@@ -72,8 +76,8 @@ export default function SettingsPage() {
         setFullName(u.full_name ?? "");
         setLocale(u.locale ?? "fr");
       })
-      .catch(() => toast.error("Impossible de charger le profil"));
-  }, []);
+      .catch(() => toast.error(t("profile_load_failed")));
+  }, [t]);
 
   useEffect(() => {
     if (tab === "security") {
@@ -96,13 +100,13 @@ export default function SettingsPage() {
         json: { full_name: fullName || null, locale },
       });
       setUser(updated);
-      toast.success("Profil enregistré");
+      toast.success(t("profile_saved"));
       if (locale !== (user.locale ?? "fr")) {
         document.cookie = `raijin.locale=${locale}; path=/; max-age=31536000; SameSite=Lax`;
         window.location.reload();
       }
     } catch {
-      toast.error("Enregistrement impossible");
+      toast.error(t("save_failed"));
     } finally {
       setSavingProfile(false);
     }
@@ -119,9 +123,9 @@ export default function SettingsPage() {
       });
       setApiKeys((items) => [created.api_key, ...items]);
       setNewKeySecret(created.secret);
-      toast.success("Clé API créée");
+      toast.success(t("api_key_created"));
     } catch {
-      toast.error("Impossible de créer la clé");
+      toast.error(t("api_key_create_failed"));
     }
   }
 
@@ -136,13 +140,13 @@ export default function SettingsPage() {
     const setup = await apiFetch<{ otpauth_url: string; backup_codes: string[] }>("/security/totp/setup", { method: "POST" });
     setTotpUrl(setup.otpauth_url);
     setBackupCodes(setup.backup_codes);
-    toast.success("Secret 2FA généré");
+    toast.success(t("totp_secret_generated"));
   }
 
   async function enableTotp() {
     await apiFetch("/security/totp/enable", { method: "POST", json: { code: totpCode } });
     setUser((u) => (u ? { ...u, totp_enabled: true } : u));
-    toast.success("2FA activée");
+    toast.success(t("totp_enabled_toast"));
   }
 
   async function saveNotificationPrefs() {
@@ -150,16 +154,16 @@ export default function SettingsPage() {
       method: "PUT",
       json: { preferences: notificationPrefs },
     });
-    toast.success("Préférences enregistrées");
+    toast.success(t("preferences_saved"));
   }
 
   async function savePassword() {
     if (newPassword !== confirmPassword) {
-      toast.error("Les deux mots de passe ne correspondent pas");
+      toast.error(t("password_mismatch"));
       return;
     }
     if (newPassword.length < 8) {
-      toast.error("Au moins 8 caractères");
+      toast.error(t("password_too_short"));
       return;
     }
     setSavingPwd(true);
@@ -171,28 +175,36 @@ export default function SettingsPage() {
       setCurrentPassword("");
       setNewPassword("");
       setConfirmPassword("");
-      toast.success("Mot de passe mis à jour");
+      toast.success(t("password_updated"));
     } catch (err) {
       if (err instanceof ApiError && err.status === 401) {
-        toast.error("Mot de passe actuel incorrect");
+        toast.error(t("password_current_incorrect"));
       } else {
-        toast.error("Changement impossible");
+        toast.error(t("password_change_failed"));
       }
     } finally {
       setSavingPwd(false);
     }
   }
 
-  if (!user) return <p className="text-sm text-white/50">Chargement…</p>;
+  if (!user) return <p className="text-sm text-white/50">{tApp("loading")}</p>;
+
+  const notificationKinds: { key: string; label: string }[] = [
+    { key: "invoice_ready", label: t("notif_invoice_ready") },
+    { key: "invoice_failed", label: t("notif_invoice_failed") },
+    { key: "integration_synced", label: t("notif_integration_synced") },
+    { key: "mydata_submitted", label: t("notif_mydata_submitted") },
+    { key: "erp_exported", label: t("notif_erp_exported") },
+  ];
 
   return (
     <div className="space-y-6">
       <div>
         <h1 className="font-serif-italic text-[30px] leading-none text-white/95">
-          Paramètres
+          {t("title")}
         </h1>
         <p className="mt-1 text-[13px] text-white/60">
-          Gère ton profil, ta sécurité et tes préférences.
+          {t("subtitle")}
         </p>
       </div>
 
@@ -225,30 +237,30 @@ export default function SettingsPage() {
 
       {tab === "profile" && (
         <div className="max-w-2xl space-y-4">
-          <Section title="Identité" description="Ces informations sont visibles par ton équipe.">
+          <Section title={t("identity_title")} description={t("identity_desc")}>
             <div className="space-y-1.5">
-              <Label className="text-[11px] text-white/55">Email</Label>
+              <Label className="text-[11px] text-white/55">{t("email_label")}</Label>
               <input
                 value={user.email}
                 disabled
                 className={`${inputClass} cursor-not-allowed font-mono-display`}
               />
               <p className="text-[11px] text-white/35">
-                L&apos;email ne peut pas être modifié. Pour en changer, contacte un admin.
+                {t("email_locked_hint")}
               </p>
             </div>
             <div className="space-y-1.5">
-              <Label htmlFor="settings-full-name" className="text-[11px] text-white/55">Nom complet</Label>
+              <Label htmlFor="settings-full-name" className="text-[11px] text-white/55">{t("full_name_label")}</Label>
               <Input
                 id="settings-full-name"
                 value={fullName}
                 onChange={(e) => setFullName(e.target.value)}
                 className="border-white/10 bg-white/[0.04] text-white placeholder:text-white/35 focus-visible:ring-violet-500/50"
-                placeholder="Prénom Nom"
+                placeholder={t("full_name_placeholder")}
               />
             </div>
             <div className="space-y-1.5">
-              <Label className="text-[11px] text-white/55">Rôle</Label>
+              <Label className="text-[11px] text-white/55">{t("role_label")}</Label>
               <div className="flex items-center gap-2">
                 <span
                   className="inline-flex items-center gap-1.5 rounded-full border border-violet-500/40 px-2.5 py-0.5 text-[11px] font-semibold uppercase tracking-[0.08em] text-violet-300"
@@ -270,7 +282,7 @@ export default function SettingsPage() {
                 disabled={savingProfile}
                 className="btn-primary-violet disabled:opacity-60"
               >
-                {savingProfile ? "Enregistrement…" : "Enregistrer"}
+                {savingProfile ? t("saving") : tCommon("save")}
               </button>
             </div>
           </Section>
@@ -280,11 +292,11 @@ export default function SettingsPage() {
       {tab === "security" && (
         <div className="max-w-2xl space-y-4">
           <Section
-            title="Mot de passe"
-            description="Au moins 8 caractères. Choisis une phrase unique et non réutilisée."
+            title={t("password_title")}
+            description={t("password_desc")}
           >
             <div className="space-y-1.5">
-              <Label htmlFor="settings-current-password" className="text-[11px] text-white/55">Mot de passe actuel</Label>
+              <Label htmlFor="settings-current-password" className="text-[11px] text-white/55">{t("current_password")}</Label>
               <PasswordInput
                 id="settings-current-password"
                 value={currentPassword}
@@ -295,7 +307,7 @@ export default function SettingsPage() {
             </div>
             <div className="grid gap-4 sm:grid-cols-2">
               <div className="space-y-1.5">
-                <Label htmlFor="settings-new-password" className="text-[11px] text-white/55">Nouveau</Label>
+                <Label htmlFor="settings-new-password" className="text-[11px] text-white/55">{t("new_password")}</Label>
                 <PasswordInput
                   id="settings-new-password"
                   value={newPassword}
@@ -306,7 +318,7 @@ export default function SettingsPage() {
                 />
               </div>
               <div className="space-y-1.5">
-                <Label htmlFor="settings-confirm-password" className="text-[11px] text-white/55">Confirmer</Label>
+                <Label htmlFor="settings-confirm-password" className="text-[11px] text-white/55">{t("confirm_password")}</Label>
                 <PasswordInput
                   id="settings-confirm-password"
                   value={confirmPassword}
@@ -323,14 +335,14 @@ export default function SettingsPage() {
                 disabled={savingPwd || !currentPassword || !newPassword}
                 className="btn-primary-violet disabled:opacity-60"
               >
-                {savingPwd ? "Mise à jour…" : "Changer le mot de passe"}
+                {savingPwd ? t("updating") : t("change_password")}
               </button>
             </div>
           </Section>
 
           <Section
-            title="Clés API"
-            description="Créer des tokens longue durée pour les intégrations tierces."
+            title={t("api_keys_title")}
+            description={t("api_keys_desc")}
           >
             <div className="flex gap-2">
               <Input
@@ -339,7 +351,7 @@ export default function SettingsPage() {
                 className="border-white/10 bg-white/[0.04] text-white"
               />
               <button className="btn-primary-violet" onClick={createApiKey}>
-                Créer
+                {t("create")}
               </button>
             </div>
             {newKeySecret && (
@@ -364,24 +376,24 @@ export default function SettingsPage() {
                     disabled={Boolean(key.revoked_at)}
                     onClick={() => revokeApiKey(key.id)}
                   >
-                    {key.revoked_at ? "Révoquée" : "Révoquer"}
+                    {key.revoked_at ? t("revoked") : t("revoke")}
                   </button>
                 </div>
               ))}
             </div>
           </Section>
 
-          <Section title="2FA TOTP" description="Prépare un secret compatible Authenticator.">
+          <Section title={t("totp_title")} description={t("totp_desc")}>
             <div className="flex gap-2">
-              <button className="btn-glass" onClick={setupTotp}>Générer</button>
+              <button className="btn-glass" onClick={setupTotp}>{t("generate")}</button>
               <Input
                 value={totpCode}
                 onChange={(e) => setTotpCode(e.target.value)}
-                placeholder="Code 6 chiffres"
+                placeholder={t("totp_code_placeholder")}
                 className="max-w-[160px] border-white/10 bg-white/[0.04] font-mono text-white"
               />
               <button className="btn-primary-violet" onClick={enableTotp} disabled={!totpUrl || !totpCode}>
-                {user.totp_enabled ? "Activée" : "Activer"}
+                {user.totp_enabled ? t("enabled") : t("enable")}
               </button>
             </div>
             {totpUrl && (
@@ -400,15 +412,15 @@ export default function SettingsPage() {
             )}
           </Section>
 
-          <Section title="Sessions" description="Connexions récentes et révocation à distance.">
+          <Section title={t("sessions_title")} description={t("sessions_desc")}>
             <div className="space-y-2">
               {sessions.map((session) => (
                 <div
                   key={session.id}
                   className="rounded-lg border border-white/[0.06] bg-white/[0.02] px-3 py-2.5 text-[12px]"
                 >
-                  <p className="text-white/80">{session.ip_address ?? "IP inconnue"}</p>
-                  <p className="truncate text-white/35">{session.user_agent ?? "User agent absent"}</p>
+                  <p className="text-white/80">{session.ip_address ?? t("ip_unknown")}</p>
+                  <p className="truncate text-white/35">{session.user_agent ?? t("user_agent_missing")}</p>
                 </div>
               ))}
             </div>
@@ -418,35 +430,29 @@ export default function SettingsPage() {
 
       {tab === "preferences" && (
         <div className="max-w-2xl space-y-4">
-          <Section title="Langue" description="Langue de l'interface.">
+          <Section title={t("language")} description={t("language_desc")}>
             <div className="space-y-1.5">
-              <Label className="text-[11px] text-white/55">Langue</Label>
+              <Label className="text-[11px] text-white/55">{t("language")}</Label>
               <select
                 value={locale}
                 onChange={(e) => setLocale(e.target.value)}
                 className="h-10 w-full rounded-lg border border-white/10 bg-white/[0.04] px-3 text-[13px] text-white"
               >
-                <option value="fr">Français</option>
-                <option value="en">English</option>
-                <option value="el">Ελληνικά</option>
+                <option value="fr">{t("language_fr")}</option>
+                <option value="en">{t("language_en")}</option>
+                <option value="el">{t("language_el")}</option>
               </select>
               <p className="text-[11px] text-white/35">
-                La préférence est stockée sur ton profil et utilisée côté backend.
+                {t("language_hint")}
               </p>
               <button className="btn-glass" onClick={saveProfile}>
-                Enregistrer la langue
+                {t("save_language")}
               </button>
             </div>
           </Section>
 
-          <Section title="Notifications" description="Choisis ce qui t'arrive en live.">
-            {[
-              { key: "invoice_ready", label: "Factures prêtes à valider" },
-              { key: "invoice_failed", label: "Échecs OCR" },
-              { key: "integration_synced", label: "Sync Outlook / Gmail / Drive" },
-              { key: "mydata_submitted", label: "Soumissions myDATA" },
-              { key: "erp_exported", label: "Exports ERP" },
-            ].map((n) => (
+          <Section title={t("notifications_title")} description={t("notifications_desc")}>
+            {notificationKinds.map((n) => (
               <div
                 key={n.key}
                 className="flex items-center justify-between rounded-lg border border-white/[0.06] bg-white/[0.02] px-3 py-2.5"
@@ -467,7 +473,7 @@ export default function SettingsPage() {
                         }))
                       }
                     />
-                    App
+                    {t("channel_app")}
                   </label>
                   <label className="flex items-center gap-1">
                     <input
@@ -483,19 +489,19 @@ export default function SettingsPage() {
                         }))
                       }
                     />
-                    Email
+                    {t("channel_email")}
                   </label>
                 </div>
               </div>
             ))}
             <button className="btn-primary-violet" onClick={saveNotificationPrefs}>
-              Enregistrer les préférences
+              {t("save_preferences")}
             </button>
           </Section>
 
           <Section
-            title="Mes données"
-            description="Exporte ou demande la suppression de tes données personnelles (RGPD)."
+            title={t("my_data_title")}
+            description={t("my_data_desc")}
           >
             <div className="flex flex-col gap-2 sm:flex-row">
               <button
@@ -517,32 +523,32 @@ export default function SettingsPage() {
                     a.click();
                     document.body.removeChild(a);
                     URL.revokeObjectURL(url);
-                    toast.success("Export téléchargé");
+                    toast.success(t("export_downloaded"));
                   } catch {
-                    toast.error("Export impossible");
+                    toast.error(t("export_failed"));
                   }
                 }}
               >
-                Télécharger mes données (.zip)
+                {t("download_my_data")}
               </button>
               <button
                 className="btn-glass text-rose-200 hover:text-rose-100"
                 onClick={async () => {
-                  if (!confirm("Demander la suppression de ton compte et de toutes tes données sous 30 jours ?")) return;
+                  if (!confirm(t("delete_confirm"))) return;
                   try {
                     await apiFetch("/security/gdpr/delete-request", { method: "POST" });
-                    toast.success("Demande de suppression enregistrée. Tu recevras une confirmation par email.");
+                    toast.success(t("delete_requested"));
                   } catch (err) {
-                    const msg = err instanceof ApiError ? `Erreur ${err.status}` : "Erreur réseau";
+                    const msg = err instanceof ApiError ? t("error_with_status", { status: err.status }) : tCommon("error_network");
                     toast.error(msg);
                   }
                 }}
               >
-                Demander la suppression
+                {t("request_deletion")}
               </button>
             </div>
             <p className="text-[11px] text-white/35">
-              L&apos;export inclut ton profil, tes factures, tes fournisseurs et tes sessions. La suppression est planifiée à +30 jours et réversible pendant cette période.
+              {t("my_data_footer")}
             </p>
           </Section>
         </div>

@@ -4,6 +4,7 @@ import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { useCallback, useState } from "react";
 import { useDropzone } from "react-dropzone";
+import { useTranslations } from "next-intl";
 import { ApiError, apiUpload } from "@/lib/api";
 import type { UploadResponse } from "@/lib/types";
 import { Button } from "@/components/ui/button";
@@ -26,6 +27,8 @@ type UploadItem = {
 
 export default function UploadPage() {
   const router = useRouter();
+  const t = useTranslations("upload");
+  const tCommon = useTranslations("common");
   const [items, setItems] = useState<UploadItem[]>([]);
 
   const onDrop = useCallback((accepted: File[]) => {
@@ -54,8 +57,8 @@ export default function UploadPage() {
           err instanceof ApiError
             ? typeof err.payload === "object" && err.payload !== null && "detail" in err.payload
               ? String((err.payload as { detail: unknown }).detail)
-              : `Erreur ${err.status}`
-            : "Erreur réseau";
+              : `${tCommon("error_generic")} ${err.status}`
+            : tCommon("error_network");
         setItems((prev) =>
           prev.map((x) => (x === item ? { ...x, status: "error", error: message } : x)),
         );
@@ -64,20 +67,19 @@ export default function UploadPage() {
   }
 
   const hasPending = items.some((i) => i.status === "pending");
+  const pendingCount = items.filter((i) => i.status === "pending").length;
 
   return (
     <div className="space-y-6">
       <div>
-        <h1 className="text-2xl font-semibold tracking-tight">Importer des factures</h1>
-        <p className="text-sm text-muted-foreground">
-          Formats acceptés : PDF, JPG, PNG — 20 Mo max par fichier.
-        </p>
+        <h1 className="text-2xl font-semibold tracking-tight">{t("title")}</h1>
+        <p className="text-sm text-muted-foreground">{t("subtitle")}</p>
       </div>
 
       <Card>
         <CardHeader>
-          <CardTitle>Glisser-déposer</CardTitle>
-          <CardDescription>Ou clique pour sélectionner depuis ton disque.</CardDescription>
+          <CardTitle>{t("dropzone_title")}</CardTitle>
+          <CardDescription>{t("dropzone_desc")}</CardDescription>
         </CardHeader>
         <CardContent>
           <div
@@ -89,7 +91,7 @@ export default function UploadPage() {
           >
             <input {...getInputProps()} />
             <p className="text-sm font-medium">
-              {isDragActive ? "Dépose ici…" : "Glisse tes factures ou clique pour parcourir"}
+              {isDragActive ? t("drop_here") : t("drag_or_browse")}
             </p>
             <p className="mt-1 text-xs text-muted-foreground">PDF, JPG, PNG</p>
           </div>
@@ -99,7 +101,7 @@ export default function UploadPage() {
       {items.length > 0 && (
         <Card>
           <CardHeader>
-            <CardTitle>Fichiers sélectionnés ({items.length})</CardTitle>
+            <CardTitle>{t("selected_files", { count: items.length })}</CardTitle>
           </CardHeader>
           <CardContent className="space-y-3">
             <ul className="divide-y">
@@ -108,7 +110,7 @@ export default function UploadPage() {
                   <div className="min-w-0">
                     <p className="truncate font-medium">{item.file.name}</p>
                     <p className="text-xs text-muted-foreground">
-                      {(item.file.size / 1024).toFixed(0)} Ko
+                      {(item.file.size / 1024).toFixed(0)} {t("kb")}
                       {item.error && <span className="ml-2 text-destructive">— {item.error}</span>}
                     </p>
                   </div>
@@ -120,17 +122,17 @@ export default function UploadPage() {
                       item.status === "uploading" && "text-blue-600",
                     )}
                   >
-                    {item.status === "pending" && "En attente"}
-                    {item.status === "uploading" && "Envoi…"}
-                    {item.status === "done" && "✓ Importée"}
-                    {item.status === "error" && "Erreur"}
+                    {item.status === "pending" && t("status_pending")}
+                    {item.status === "uploading" && t("status_uploading")}
+                    {item.status === "done" && t("status_done")}
+                    {item.status === "error" && t("status_error")}
                   </span>
                   {item.invoiceId && (
                     <Link
                       href={`/invoices/${item.invoiceId}` as never}
                       className="ml-3 text-xs font-medium text-violet-300 underline-offset-4 hover:underline"
                     >
-                      Ouvrir
+                      {t("open")}
                     </Link>
                   )}
                 </li>
@@ -138,10 +140,10 @@ export default function UploadPage() {
             </ul>
             <div className="flex gap-2">
               <Button onClick={uploadAll} disabled={!hasPending}>
-                Importer {hasPending ? `(${items.filter((i) => i.status === "pending").length})` : ""}
+                {hasPending ? t("import_with_count", { count: pendingCount }) : t("import")}
               </Button>
               <Button variant="outline" onClick={() => router.push("/dashboard")}>
-                Retour au tableau de bord
+                {t("back_to_dashboard")}
               </Button>
             </div>
           </CardContent>

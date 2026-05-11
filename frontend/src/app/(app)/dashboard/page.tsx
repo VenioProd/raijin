@@ -3,6 +3,7 @@
 import Link from "next/link";
 import { useEffect, useMemo, useState } from "react";
 import { Download, Upload } from "lucide-react";
+import { useTranslations } from "next-intl";
 import { apiFetch } from "@/lib/api";
 import { getAccessToken } from "@/lib/auth";
 import type { InvoiceStats, User } from "@/lib/types";
@@ -28,6 +29,7 @@ interface MetricsResponse {
 }
 
 export default function DashboardPage() {
+  const t = useTranslations("dashboard");
   const [stats, setStats] = useState<InvoiceStats | null>(null);
   const [metrics, setMetrics] = useState<MetricsResponse | null>(null);
   const [user, setUser] = useState<User | null>(null);
@@ -84,11 +86,11 @@ export default function DashboardPage() {
         <div className="flex items-center gap-2.5">
           <button onClick={exportExcel} className="btn-glass">
             <Download className="h-3.5 w-3.5" />
-            Exporter Excel
+            {t("export_excel")}
           </button>
           <Link href="/upload" className="btn-primary-violet">
             <Upload className="h-3.5 w-3.5" />
-            Importer
+            {t("import")}
           </Link>
         </div>
       </div>

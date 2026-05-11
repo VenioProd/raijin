@@ -9,3 +9,7 @@ os.environ.setdefault("S3_ACCESS_KEY", "test")
 os.environ.setdefault("S3_SECRET_KEY", "test_secret")
 os.environ.setdefault("S3_BUCKET_INVOICES", "test-invoices")
 os.environ.setdefault("JWT_SECRET", "test_secret_" + "x" * 32)
+# Stable Fernet key for the test suite — never use in production.
+os.environ.setdefault(
+    "ENCRYPTION_KEY", "zmWmkMt1J5w0EwzMbBmTU2-qaIa_6mfsgPMHiv63b3w="
+)

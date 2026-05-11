@@ -3,6 +3,7 @@
 import { useCallback, useEffect, useState } from "react";
 import { useSearchParams } from "next/navigation";
 import { toast } from "sonner";
+import { useTranslations, useLocale } from "next-intl";
 import { apiFetch, ApiError } from "@/lib/api";
 import type { AuthorizeResponse, CloudDriveSource, EmailSource } from "@/lib/types";
 import { Button } from "@/components/ui/button";
@@ -18,17 +19,9 @@ import {
 import { MyDataCard } from "@/components/mydata-card";
 import { ErpCard } from "@/components/erp-card";
 
-function formatRelative(iso: string | null): string {
-  if (!iso) return "jamais";
-  const d = new Date(iso);
-  const diff = Date.now() - d.getTime();
-  if (diff < 60_000) return "à l'instant";
-  if (diff < 3_600_000) return `il y a ${Math.round(diff / 60_000)} min`;
-  if (diff < 86_400_000) return `il y a ${Math.round(diff / 3_600_000)} h`;
-  return d.toLocaleDateString("fr-FR");
-}
-
 export default function IntegrationsPage() {
+  const t = useTranslations("integrations");
+  const locale = useLocale();
   const [emailSources, setEmailSources] = useState<EmailSource[]>([]);
   const [driveSources, setDriveSources] = useState<CloudDriveSource[]>([]);
   const [loading, setLoading] = useState(true);
@@ -37,6 +30,18 @@ export default function IntegrationsPage() {
   const [connectingDrive, setConnectingDrive] = useState(false);
   const [driveFolderId, setDriveFolderId] = useState("");
   const searchParams = useSearchParams();
+
+  const localeTag = locale === "fr" ? "fr-FR" : locale === "el" ? "el-GR" : "en-US";
+
+  function formatRelative(iso: string | null): string {
+    if (!iso) return t("never");
+    const d = new Date(iso);
+    const diff = Date.now() - d.getTime();
+    if (diff < 60_000) return t("just_now");
+    if (diff < 3_600_000) return t("minutes_ago", { count: Math.round(diff / 60_000) });
+    if (diff < 86_400_000) return t("hours_ago", { count: Math.round(diff / 3_600_000) });
+    return d.toLocaleDateString(localeTag);
+  }
 
   const load = useCallback(async () => {
     try {
@@ -47,11 +52,11 @@ export default function IntegrationsPage() {
       setEmailSources(emails);
       setDriveSources(drives);
     } catch {
-      toast.error("Impossible de charger les intégrations");
+      toast.error(t("load_error"));
     } finally {
       setLoading(false);
     }
-  }, []);
+  }, [t]);
 
   useEffect(() => {
     void load();
@@ -60,11 +65,11 @@ export default function IntegrationsPage() {
   useEffect(() => {
     const connected = searchParams.get("connected");
     const err = searchParams.get("error");
-    if (connected === "outlook") toast.success("Compte Outlook connecté");
-    else if (connected === "gmail") toast.success("Compte Gmail connecté");
-    else if (connected === "gdrive") toast.success("Google Drive connecté");
-    else if (err) toast.error(`Connexion échouée : ${err}`);
-  }, [searchParams]);
+    if (connected === "outlook") toast.success(t("connected_outlook"));
+    else if (connected === "gmail") toast.success(t("connected_gmail"));
+    else if (connected === "gdrive") toast.success(t("connected_gdrive"));
+    else if (err) toast.error(t("connection_failed", { error: err }));
+  }, [searchParams, t]);
 
   async function connectProvider(
     path: string,
@@ -77,9 +82,9 @@ export default function IntegrationsPage() {
       window.location.href = res.authorize_url;
     } catch (err) {
       if (err instanceof ApiError && err.status === 503) {
-        toast.error(`OAuth ${label} non configuré — contacte l'admin`);
+        toast.error(t("oauth_not_configured", { label }));
       } else {
-        toast.error("Impossible de lancer la connexion");
+        toast.error(t("cannot_start_connection"));
       }
       setLoading(false);
     }
@@ -87,7 +92,7 @@ export default function IntegrationsPage() {
 
   async function connectDrive() {
     if (!driveFolderId.trim()) {
-      toast.error("Indique l'ID du dossier Google Drive");
+      toast.error(t("drive_folder_required"));
       return;
     }
     setConnectingDrive(true);
@@ -97,9 +102,9 @@ export default function IntegrationsPage() {
       window.location.href = res.authorize_url;
     } catch (err) {
       if (err instanceof ApiError && err.status === 503) {
-        toast.error("OAuth Google non configuré");
+        toast.error(t("oauth_google_not_configured"));
       } else {
-        toast.error("Impossible de lancer la connexion");
+        toast.error(t("cannot_start_connection"));
       }
       setConnectingDrive(false);
     }
@@ -108,64 +113,62 @@ export default function IntegrationsPage() {
   async function syncEmailNow(source: EmailSource) {
     try {
       await apiFetch(`/integrations/email-sources/${source.id}/sync`, { method: "POST" });
-      toast.success("Sync lancée");
+      toast.success(t("sync_started"));
     } catch {
-      toast.error("Sync impossible");
+      toast.error(t("sync_failed"));
     }
   }
 
   async function syncDriveNow(source: CloudDriveSource) {
     try {
       await apiFetch(`/integrations/gdrive-sources/${source.id}/sync`, { method: "POST" });
-      toast.success("Sync Drive lancée");
+      toast.success(t("sync_drive_started"));
     } catch {
-      toast.error("Sync impossible");
+      toast.error(t("sync_failed"));
     }
   }
 
   async function disconnectEmail(source: EmailSource) {
-    if (!confirm(`Déconnecter ${source.account_email} ?`)) return;
+    if (!confirm(t("confirm_disconnect_email", { email: source.account_email }))) return;
     try {
       await apiFetch(`/integrations/email-sources/${source.id}`, { method: "DELETE" });
-      toast.success("Source déconnectée");
+      toast.success(t("source_disconnected"));
       await load();
     } catch {
-      toast.error("Déconnexion impossible");
+      toast.error(t("disconnect_failed"));
     }
   }
 
   async function disconnectDrive(source: CloudDriveSource) {
-    if (!confirm(`Déconnecter le dossier ${source.folder_id} ?`)) return;
+    if (!confirm(t("confirm_disconnect_folder", { folder: source.folder_id }))) return;
     try {
       await apiFetch(`/integrations/gdrive-sources/${source.id}`, { method: "DELETE" });
-      toast.success("Source déconnectée");
+      toast.success(t("source_disconnected"));
       await load();
     } catch {
-      toast.error("Déconnexion impossible");
+      toast.error(t("disconnect_failed"));
     }
   }
 
   return (
     <div className="space-y-6">
       <div>
-        <h1 className="text-2xl font-semibold tracking-tight">Intégrations</h1>
-        <p className="text-sm text-muted-foreground">
-          Connecte tes boîtes mails et cloud drives pour ingérer automatiquement les factures.
-        </p>
+        <h1 className="text-2xl font-semibold tracking-tight">{t("title")}</h1>
+        <p className="text-sm text-muted-foreground">{t("subtitle")}</p>
       </div>
 
       <div className="grid gap-4 md:grid-cols-3">
         <Card>
           <CardHeader>
             <CardTitle className="text-lg">Microsoft Outlook</CardTitle>
-            <CardDescription>PDF/JPG/PNG attachés à l&apos;Inbox, toutes les 15 min.</CardDescription>
+            <CardDescription>{t("outlook_desc")}</CardDescription>
           </CardHeader>
           <CardContent>
             <Button
               onClick={() => connectProvider("/integrations/outlook/authorize", setConnectingOutlook, "Microsoft")}
               disabled={connectingOutlook}
             >
-              {connectingOutlook ? "Redirection…" : "Connecter Outlook"}
+              {connectingOutlook ? t("redirecting") : t("connect_outlook")}
             </Button>
           </CardContent>
         </Card>
@@ -173,14 +176,14 @@ export default function IntegrationsPage() {
         <Card>
           <CardHeader>
             <CardTitle className="text-lg">Gmail</CardTitle>
-            <CardDescription>Pièces jointes des mails reçus, toutes les 15 min.</CardDescription>
+            <CardDescription>{t("gmail_desc")}</CardDescription>
           </CardHeader>
           <CardContent>
             <Button
               onClick={() => connectProvider("/integrations/gmail/authorize", setConnectingGmail, "Google")}
               disabled={connectingGmail}
             >
-              {connectingGmail ? "Redirection…" : "Connecter Gmail"}
+              {connectingGmail ? t("redirecting") : t("connect_gmail")}
             </Button>
           </CardContent>
         </Card>
@@ -188,19 +191,17 @@ export default function IntegrationsPage() {
         <Card>
           <CardHeader>
             <CardTitle className="text-lg">Google Drive</CardTitle>
-            <CardDescription>
-              Surveille un dossier partagé et ingère les nouveaux PDF/JPG/PNG.
-            </CardDescription>
+            <CardDescription>{t("gdrive_desc")}</CardDescription>
           </CardHeader>
           <CardContent className="space-y-2">
-            <Label>ID du dossier</Label>
+            <Label>{t("folder_id_label")}</Label>
             <Input
               value={driveFolderId}
               onChange={(e) => setDriveFolderId(e.target.value)}
-              placeholder="1A2B3C… (URL du dossier)"
+              placeholder={t("folder_id_placeholder")}
             />
             <Button onClick={connectDrive} disabled={connectingDrive}>
-              {connectingDrive ? "Redirection…" : "Connecter Drive"}
+              {connectingDrive ? t("redirecting") : t("connect_drive")}
             </Button>
           </CardContent>
         </Card>
@@ -213,13 +214,13 @@ export default function IntegrationsPage() {
 
       <Card>
         <CardHeader>
-          <CardTitle className="text-lg">Sources email ({emailSources.length})</CardTitle>
+          <CardTitle className="text-lg">{t("email_sources_title", { count: emailSources.length })}</CardTitle>
         </CardHeader>
         <CardContent>
-          {loading && <p className="text-sm text-muted-foreground">Chargement…</p>}
+          {loading && <p className="text-sm text-muted-foreground">{t("loading")}</p>}
           {!loading && emailSources.length === 0 && (
             <p className="py-4 text-center text-sm text-muted-foreground">
-              Aucune boîte mail connectée.
+              {t("no_email_connected")}
             </p>
           )}
           {emailSources.length > 0 && (
@@ -229,24 +230,24 @@ export default function IntegrationsPage() {
                   <div>
                     <p className="font-medium">{source.account_email}</p>
                     <p className="text-xs text-muted-foreground">
-                      {source.provider.toUpperCase()} · dossier {source.folder} ·{" "}
+                      {source.provider.toUpperCase()} · {t("folder")} {source.folder} ·{" "}
                       {source.is_active ? (
-                        <span className="text-emerald-700">active</span>
+                        <span className="text-emerald-700">{t("active")}</span>
                       ) : (
-                        <span className="text-rose-700">inactive</span>
+                        <span className="text-rose-700">{t("inactive")}</span>
                       )}{" "}
-                      · dernier sync : {formatRelative(source.last_sync_at)}
+                      · {t("last_sync")} : {formatRelative(source.last_sync_at)}
                     </p>
                     {source.last_error && (
-                      <p className="mt-1 text-xs text-destructive">Erreur : {source.last_error}</p>
+                      <p className="mt-1 text-xs text-destructive">{t("error_label")} : {source.last_error}</p>
                     )}
                   </div>
                   <div className="flex gap-2">
                     <Button size="sm" variant="outline" onClick={() => syncEmailNow(source)} disabled={!source.is_active}>
-                      Sync
+                      {t("sync")}
                     </Button>
                     <Button size="sm" variant="destructive" onClick={() => disconnectEmail(source)}>
-                      Déconnecter
+                      {t("disconnect")}
                     </Button>
                   </div>
                 </li>
@@ -258,12 +259,12 @@ export default function IntegrationsPage() {
 
       <Card>
         <CardHeader>
-          <CardTitle className="text-lg">Sources Google Drive ({driveSources.length})</CardTitle>
+          <CardTitle className="text-lg">{t("drive_sources_title", { count: driveSources.length })}</CardTitle>
         </CardHeader>
         <CardContent>
-          {loading && <p className="text-sm text-muted-foreground">Chargement…</p>}
+          {loading && <p className="text-sm text-muted-foreground">{t("loading")}</p>}
           {!loading && driveSources.length === 0 && (
-            <p className="py-4 text-center text-sm text-muted-foreground">Aucun dossier connecté.</p>
+            <p className="py-4 text-center text-sm text-muted-foreground">{t("no_folder_connected")}</p>
           )}
           {driveSources.length > 0 && (
             <ul className="divide-y">
@@ -274,22 +275,22 @@ export default function IntegrationsPage() {
                     <p className="text-xs text-muted-foreground">
                       {source.provider.toUpperCase()} · {source.account_email ?? "—"} ·{" "}
                       {source.is_active ? (
-                        <span className="text-emerald-700">active</span>
+                        <span className="text-emerald-700">{t("active")}</span>
                       ) : (
-                        <span className="text-rose-700">inactive</span>
+                        <span className="text-rose-700">{t("inactive")}</span>
                       )}{" "}
-                      · dernier sync : {formatRelative(source.last_sync_at)}
+                      · {t("last_sync")} : {formatRelative(source.last_sync_at)}
                     </p>
                     {source.last_error && (
-                      <p className="mt-1 text-xs text-destructive">Erreur : {source.last_error}</p>
+                      <p className="mt-1 text-xs text-destructive">{t("error_label")} : {source.last_error}</p>
                     )}
                   </div>
                   <div className="flex gap-2">
                     <Button size="sm" variant="outline" onClick={() => syncDriveNow(source)} disabled={!source.is_active}>
-                      Sync
+                      {t("sync")}
                     </Button>
                     <Button size="sm" variant="destructive" onClick={() => disconnectDrive(source)}>
-                      Déconnecter
+                      {t("disconnect")}
                     </Button>
                   </div>
                 </li>

@@ -19,7 +19,11 @@ from app.core.security import (
     verify_password,
 )
 from app.services.email_delivery import send_transactional_email
-from app.services.security_management import verify_backup_code, verify_totp_code
+from app.services.security_management import (
+    decrypt_totp_secret,
+    verify_backup_code,
+    verify_totp_code,
+)
 
 
 class AuthError(Exception):
@@ -110,7 +114,7 @@ async def authenticate(
     if not user.is_active:
         raise InactiveUserError()
     if user.totp_enabled:
-        secret = user.totp_secret_encrypted
+        secret = decrypt_totp_secret(user.totp_secret_encrypted)
         valid_totp = bool(secret and totp_code and verify_totp_code(secret, totp_code))
         remaining_backup_codes = verify_backup_code(user.backup_codes, backup_code)
         if not valid_totp and remaining_backup_codes is None:

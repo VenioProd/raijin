@@ -37,6 +37,10 @@ celery_app.conf.update(
             "task": "drive.sync_all_gdrive",
             "schedule": 900.0,
         },
+        "gdpr-process-due-deletions": {
+            "task": "gdpr.process_due_deletions",
+            "schedule": 3600.0,  # every hour
+        },
     },
 )
 

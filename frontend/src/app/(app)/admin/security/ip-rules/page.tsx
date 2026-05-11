@@ -1,6 +1,7 @@
 "use client";
 
 import { useCallback, useEffect, useState } from "react";
+import { useTranslations } from "next-intl";
 import { Trash2 } from "lucide-react";
 import { toast } from "sonner";
 import { ApiError, apiFetch } from "@/lib/api";
@@ -22,6 +23,9 @@ interface IpRule {
 }
 
 export default function AdminIpRulesPage() {
+  const t = useTranslations("admin");
+  const tApp = useTranslations("app");
+  const tCommon = useTranslations("common");
   const [rules, setRules] = useState<IpRule[]>([]);
   const [loading, setLoading] = useState(true);
   const [cidr, setCidr] = useState("");
@@ -32,7 +36,7 @@ export default function AdminIpRulesPage() {
       const list = await apiFetch<IpRule[]>("/security/ip-rules");
       setRules(list);
     } catch (err) {
-      const msg = err instanceof ApiError ? `Erreur ${err.status}` : "Erreur réseau";
+      const msg = err instanceof ApiError ? t("common.error_status", { status: err.status }) : tCommon("error_network");
       toast.error(msg);
     } finally {
       setLoading(false);
@@ -54,9 +58,9 @@ export default function AdminIpRulesPage() {
       });
       setRules((prev) => [created, ...prev]);
       setCidr("");
-      toast.success("Règle ajoutée");
+      toast.success(t("ip_rules.toast_created"));
     } catch (err) {
-      const msg = err instanceof ApiError ? `Erreur ${err.status}` : "Erreur réseau";
+      const msg = err instanceof ApiError ? t("common.error_status", { status: err.status }) : tCommon("error_network");
       toast.error(msg);
     } finally {
       setCreating(false);
@@ -64,13 +68,13 @@ export default function AdminIpRulesPage() {
   }
 
   async function deleteRule(id: string) {
-    if (!confirm("Supprimer cette règle IP ?")) return;
+    if (!confirm(t("ip_rules.confirm_delete"))) return;
     try {
       await apiFetch(`/security/ip-rules/${id}`, { method: "DELETE" });
       setRules((prev) => prev.filter((r) => r.id !== id));
-      toast.success("Règle supprimée");
+      toast.success(t("ip_rules.toast_deleted"));
     } catch (err) {
-      const msg = err instanceof ApiError ? `Erreur ${err.status}` : "Erreur réseau";
+      const msg = err instanceof ApiError ? t("common.error_status", { status: err.status }) : tCommon("error_network");
       toast.error(msg);
     }
   }
@@ -78,29 +82,28 @@ export default function AdminIpRulesPage() {
   return (
     <div className="space-y-6">
       <div>
-        <h1 className="text-2xl font-semibold tracking-tight">Restrictions IP</h1>
+        <h1 className="text-2xl font-semibold tracking-tight">{t("ip_rules.title")}</h1>
         <p className="text-sm text-muted-foreground">
-          Contrôle les plages d&apos;adresses autorisées à se connecter à ton tenant. Si aucune règle n&apos;est
-          définie, toutes les IP sont acceptées.
+          {t("ip_rules.subtitle")}
         </p>
       </div>
 
       <Card>
         <CardHeader>
-          <CardTitle className="text-lg">Ajouter une règle CIDR</CardTitle>
+          <CardTitle className="text-lg">{t("ip_rules.add_title")}</CardTitle>
           <CardDescription>
-            Notation CIDR : <code className="text-violet-300">192.168.1.0/24</code>,{" "}
-            <code className="text-violet-300">10.0.0.5/32</code> pour une IP unique,{" "}
-            <code className="text-violet-300">2001:db8::/32</code> pour IPv6.
+            {t("ip_rules.cidr_help_prefix")} <code className="text-violet-300">192.168.1.0/24</code>,{" "}
+            <code className="text-violet-300">10.0.0.5/32</code> {t("ip_rules.cidr_help_single")}{" "}
+            <code className="text-violet-300">2001:db8::/32</code> {t("ip_rules.cidr_help_ipv6")}
           </CardDescription>
         </CardHeader>
         <CardContent>
           <form className="flex items-end gap-3" onSubmit={createRule}>
             <div className="flex-1 space-y-1.5">
-              <Label htmlFor="cidr">CIDR</Label>
+              <Label htmlFor="cidr">{t("ip_rules.cidr_label")}</Label>
               <Input
                 id="cidr"
-                placeholder="ex. 203.0.113.0/24"
+                placeholder={t("ip_rules.cidr_placeholder")}
                 value={cidr}
                 onChange={(e) => setCidr(e.target.value)}
                 disabled={creating}
@@ -108,7 +111,7 @@ export default function AdminIpRulesPage() {
               />
             </div>
             <Button type="submit" disabled={creating || !cidr.trim()}>
-              {creating ? "Ajout…" : "Ajouter"}
+              {creating ? t("ip_rules.adding") : t("ip_rules.add")}
             </Button>
           </form>
         </CardContent>
@@ -116,13 +119,13 @@ export default function AdminIpRulesPage() {
 
       <Card>
         <CardHeader>
-          <CardTitle className="text-lg">Règles actives</CardTitle>
+          <CardTitle className="text-lg">{t("ip_rules.active_title")}</CardTitle>
           <CardDescription>
             {loading
-              ? "Chargement…"
+              ? tApp("loading")
               : rules.length === 0
-                ? "Aucune règle définie — tout le trafic est autorisé."
-                : `${rules.length} règle${rules.length > 1 ? "s" : ""} active${rules.length > 1 ? "s" : ""}.`}
+                ? t("ip_rules.empty")
+                : t("ip_rules.count", { count: rules.length })}
           </CardDescription>
         </CardHeader>
         <CardContent>
@@ -142,7 +145,7 @@ export default function AdminIpRulesPage() {
                         rule.is_active ? "text-emerald-300" : "text-white/35"
                       }`}
                     >
-                      {rule.is_active ? "active" : "inactive"}
+                      {rule.is_active ? t("ip_rules.status_active") : t("ip_rules.status_inactive")}
                     </span>
                   </div>
                   <button
@@ -151,7 +154,7 @@ export default function AdminIpRulesPage() {
                     className="flex items-center gap-1 rounded-md px-2 py-1 text-[12px] text-rose-200 transition hover:bg-rose-500/[0.08] hover:text-rose-100"
                   >
                     <Trash2 className="h-3.5 w-3.5" />
-                    Supprimer
+                    {tCommon("delete")}
                   </button>
                 </li>
               ))}

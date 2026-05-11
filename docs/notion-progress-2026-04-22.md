@@ -24,8 +24,7 @@ Stack tourne en local, compte admin créé, flow register/login validé via navi
 
 ## Compte admin de test
 
-- Email : `raphael@venio.paris`
-- Mot de passe : `RaijinAdmin2026!`
+- Credentials retirés (rotés le 2026-05-10, voir #10). Pour un nouveau compte de test, utiliser le seeder ou créer un utilisateur avec un mot de passe à usage unique.
 - Tenant : Venio
 
 ## Sprints livrés

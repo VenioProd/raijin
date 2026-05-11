@@ -4,6 +4,7 @@ import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { useState } from "react";
 import { Zap } from "lucide-react";
+import { useTranslations } from "next-intl";
 import { ApiError, apiFetch } from "@/lib/api";
 import { setTokens } from "@/lib/auth";
 import type { TokenPair } from "@/lib/types";
@@ -13,6 +14,7 @@ import { PasswordInput } from "@/components/ui/password-input";
 
 export default function LoginPage() {
   const router = useRouter();
+  const t = useTranslations("auth");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [totpCode, setTotpCode] = useState("");
@@ -35,11 +37,11 @@ export default function LoginPage() {
     } catch (err) {
       if (err instanceof ApiError && err.status === 428) {
         setTotpRequired(true);
-        setError("Code 2FA requis.");
+        setError(t("totp_required"));
       } else if (err instanceof ApiError && err.status === 401) {
-        setError("Email ou mot de passe incorrect.");
+        setError(t("invalid_credentials"));
       } else {
-        setError("Erreur serveur, réessaye dans un instant.");
+        setError(t("server_error_retry"));
       }
     } finally {
       setLoading(false);
@@ -62,14 +64,14 @@ export default function LoginPage() {
           <span className="text-[18px] font-semibold tracking-tight text-white/95">Raijin</span>
         </div>
         <h1 className="font-serif-italic text-[28px] leading-tight text-white/95">
-          Connexion
+          {t("login_title")}
         </h1>
-        <p className="mt-1 text-[13px] text-white/60">Accède à ton espace Raijin.</p>
+        <p className="mt-1 text-[13px] text-white/60">{t("login_subtitle")}</p>
 
         <form onSubmit={handleSubmit} className="mt-6 space-y-4">
           <div className="space-y-2">
             <Label htmlFor="email" className="text-white/80">
-              Email
+              {t("email")}
             </Label>
             <Input
               id="email"
@@ -83,7 +85,7 @@ export default function LoginPage() {
           </div>
           <div className="space-y-2">
             <Label htmlFor="password" className="text-white/80">
-              Mot de passe
+              {t("password")}
             </Label>
             <PasswordInput
               id="password"
@@ -97,7 +99,7 @@ export default function LoginPage() {
           {totpRequired && (
             <div className="space-y-2">
               <Label htmlFor="totp" className="text-white/80">
-                Code 2FA
+                {t("totp_label")}
               </Label>
               <Input
                 id="totp"
@@ -115,23 +117,23 @@ export default function LoginPage() {
             disabled={loading}
             className="btn-primary-violet w-full justify-center disabled:opacity-60"
           >
-            {loading ? "Connexion…" : "Se connecter"}
+            {loading ? t("signing_in") : t("submit_login")}
           </button>
           <p className="text-center text-[13px]">
             <Link
               href="/forgot-password"
               className="font-medium text-violet-300 underline-offset-4 hover:underline"
             >
-              Mot de passe oublié ?
+              {t("forgot_password")}
             </Link>
           </p>
           <p className="text-center text-[13px] text-white/60">
-            Pas encore de compte ?{" "}
+            {t("no_account_yet")}{" "}
             <Link
               href="/register"
               className="font-medium text-violet-300 underline-offset-4 hover:underline"
             >
-              Créer un compte
+              {t("register_title")}
             </Link>
           </p>
         </form>
@@ -145,6 +147,7 @@ export default function LoginPage() {
 }
 
 function SamlSsoButton() {
+  const t = useTranslations("auth");
   const [slug, setSlug] = useState("");
   const [show, setShow] = useState(false);
   const apiUrl = process.env.NEXT_PUBLIC_API_URL ?? "http://localhost:6200";
@@ -155,7 +158,7 @@ function SamlSsoButton() {
         onClick={() => setShow(true)}
         className="w-full rounded-lg border border-white/10 bg-white/[0.02] px-3 py-2 text-[13px] text-white/70 transition hover:bg-white/[0.04]"
       >
-        Connexion SSO (SAML)
+        {t("sso_saml_login")}
       </button>
     );
   }
@@ -170,11 +173,11 @@ function SamlSsoButton() {
       className="space-y-2"
     >
       <Label htmlFor="saml-slug" className="text-white/80">
-        Identifiant de l&apos;organisation
+        {t("organisation_slug_label")}
       </Label>
       <Input
         id="saml-slug"
-        placeholder="ex. acme"
+        placeholder={t("organisation_slug_placeholder")}
         value={slug}
         onChange={(e) => setSlug(e.target.value)}
         className="border-white/10 bg-white/[0.04] text-white placeholder:text-white/35"
@@ -184,7 +187,7 @@ function SamlSsoButton() {
         disabled={!slug.trim()}
         className="btn-glass w-full justify-center disabled:opacity-60"
       >
-        Continuer vers l&apos;IdP
+        {t("continue_to_idp")}
       </button>
     </form>
   );

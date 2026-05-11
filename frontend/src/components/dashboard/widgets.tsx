@@ -12,6 +12,7 @@ import {
   Sparkles,
   Upload,
 } from "lucide-react";
+import { useTranslations } from "next-intl";
 import { apiFetch } from "@/lib/api";
 import type { InvoiceStats } from "@/lib/types";
 
@@ -67,8 +68,9 @@ export function HeroPending({
   pending: number | null;
   total: number | null;
 }) {
+  const t = useTranslations("dashboard");
   const bars = useMemo(() => generateSparkbars(pending ?? 23), [pending]);
-  const DAYS = ["L", "M", "M", "J", "V", "S", "D"];
+  const DAYS_KEYS = ["day_mon", "day_tue", "day_wed", "day_thu", "day_fri", "day_sat", "day_sun"] as const;
   const isLoading = pending === null;
   const isOnboarding = !isLoading && (total ?? 0) === 0;
   const isCaughtUp = !isLoading && !isOnboarding && (pending ?? 0) === 0;
@@ -81,14 +83,13 @@ export function HeroPending({
           <div>
             <div className="inline-flex items-center gap-1.5 rounded-full border border-violet-400/30 bg-violet-500/10 px-2.5 py-1 text-[10px] font-semibold uppercase tracking-[0.08em] text-violet-300">
               <Sparkles className="h-3 w-3" />
-              Bienvenue
+              {t("onboarding_badge")}
             </div>
             <h2 className="font-serif-italic mt-3 text-[32px] leading-[1.05] text-white/95">
-              Ta première facture est à un glisser-déposer près.
+              {t("onboarding_title")}
             </h2>
             <p className="mt-2 max-w-[320px] text-[13px] leading-snug text-white/60">
-              Ingère un PDF, laisse Azure Document Intelligence extraire les champs,
-              et valide en quelques secondes.
+              {t("onboarding_desc")}
             </p>
           </div>
           <Link
@@ -99,7 +100,7 @@ export function HeroPending({
               boxShadow: "0 10px 30px -10px rgba(139,92,246,0.55)",
             }}
           >
-            Importer ma première facture
+            {t("onboarding_cta")}
             <ArrowRight className="h-3.5 w-3.5" />
           </Link>
         </div>
@@ -115,20 +116,20 @@ export function HeroPending({
           <div>
             <div className="inline-flex items-center gap-1.5 rounded-full border border-emerald-400/30 bg-emerald-500/10 px-2.5 py-1 text-[10px] font-semibold uppercase tracking-[0.08em] text-emerald-300">
               <Check className="h-3 w-3" strokeWidth={3} />
-              Inbox zéro
+              {t("inbox_zero_badge")}
             </div>
             <h2 className="font-serif-italic mt-3 text-[32px] leading-[1.05] text-white/95">
-              Tout est à jour.
+              {t("inbox_zero_title")}
             </h2>
             <p className="mt-2 max-w-[320px] text-[13px] leading-snug text-white/60">
-              Aucune facture en attente. Nouveau document ingéré ? Il apparaîtra ici dès l&apos;OCR terminé.
+              {t("inbox_zero_desc")}
             </p>
           </div>
           <Link
             href="/upload"
             className="mt-4 inline-flex items-center gap-2 rounded-lg border border-white/10 bg-white/[0.07] px-3.5 py-2 text-[12px] font-medium text-white/60 transition hover:border-violet-500/40 hover:bg-violet-500/20 hover:text-white"
           >
-            Importer un document
+            {t("import_document")}
             <ArrowRight className="h-3.5 w-3.5" />
           </Link>
         </div>
@@ -145,16 +146,16 @@ export function HeroPending({
             {pending ?? "—"}
           </div>
           <p className="mt-2 max-w-[200px] text-[13px] leading-snug text-white/60">
-            facture{(pending ?? 0) > 1 ? "s" : ""} à valider
+            {(pending ?? 0) > 1 ? t("pending_invoices_plural") : t("pending_invoices_singular")}
             <br />
-            <span className="text-white/35">sur les 7 derniers jours</span>
+            <span className="text-white/35">{t("pending_invoices_window")}</span>
           </p>
         </div>
         <Link
           href="/dashboard?filter=ready_for_review"
           className="inline-flex items-center gap-2 rounded-lg border border-white/10 bg-white/[0.07] px-3.5 py-2 text-[12px] font-medium text-white/60 transition hover:border-violet-500/40 hover:bg-violet-500/20 hover:text-white"
         >
-          Commencer la review
+          {t("start_review")}
           <ArrowRight className="h-3.5 w-3.5" />
         </Link>
       </div>
@@ -175,12 +176,12 @@ export function HeroPending({
           ))}
         </div>
         <div className="mt-1.5 flex gap-1">
-          {DAYS.map((d, i) => (
+          {DAYS_KEYS.map((dk, i) => (
             <div
               key={i}
               className="flex-1 text-center font-mono-display text-[10px] text-white/35"
             >
-              {d}
+              {t(dk)}
             </div>
           ))}
         </div>
@@ -194,6 +195,7 @@ export function HeroPending({
 // ────────────────────────────────────────────────────────────
 
 export function ConfidenceGauge({ confidence }: { confidence: number | null }) {
+  const t = useTranslations("dashboard");
   const pct = confidence !== null ? Math.round(confidence * 100) : null;
   const R = 52;
   const C = Math.PI * R;
@@ -202,7 +204,7 @@ export function ConfidenceGauge({ confidence }: { confidence: number | null }) {
 
   return (
     <Card>
-      <WidgetTitle>Confidence OCR</WidgetTitle>
+      <WidgetTitle>{t("confidence_title")}</WidgetTitle>
       <div className="flex flex-col items-center gap-3">
         <div className="relative h-[90px] w-[140px]">
           <svg viewBox="0 0 140 90" className="absolute inset-0 h-full w-full">
@@ -244,16 +246,16 @@ export function ConfidenceGauge({ confidence }: { confidence: number | null }) {
         <div className="text-center text-[11px] leading-[1.5] text-white/35">
           {isEmpty ? (
             <>
-              À calculer
+              {t("confidence_empty_title")}
               <br />
-              <span className="text-white/45">dès la première extraction</span>
+              <span className="text-white/45">{t("confidence_empty_desc")}</span>
             </>
           ) : (
             <>
-              moyenne sur les derniers documents
+              {t("confidence_avg")}
               <br />
               <span className={pct >= 90 ? "text-emerald-400" : "text-amber-400"}>
-                {pct >= 90 ? "au-dessus du seuil 90%" : "à surveiller"}
+                {pct >= 90 ? t("confidence_above_threshold") : t("confidence_watch")}
               </span>
             </>
           )}
@@ -280,6 +282,7 @@ export function MonthCard({
   docsCount: number;
   delta: number;
 }) {
+  const t = useTranslations("dashboard");
   const isEmpty = docsCount === 0;
   const isPositive = delta >= 0;
   const now = new Date();
@@ -287,14 +290,14 @@ export function MonthCard({
 
   return (
     <Card>
-      <WidgetTitle>Ce mois · {monthLabel}</WidgetTitle>
+      <WidgetTitle>{t("month_title", { month: monthLabel })}</WidgetTitle>
       {isEmpty ? (
         <>
           <div className="font-serif-italic text-[28px] leading-tight text-white/50">
-            En attente<br />du premier document
+            {t("month_empty_line1")}<br />{t("month_empty_line2")}
           </div>
           <p className="mt-3 text-[12px] leading-relaxed text-white/35">
-            Les totaux HT, TVA et TTC s&apos;afficheront ici dès qu&apos;une facture sera validée.
+            {t("month_empty_desc")}
           </p>
         </>
       ) : (
@@ -304,15 +307,15 @@ export function MonthCard({
           </div>
           <div className="flex flex-col gap-1.5">
             <div className="flex items-center justify-between font-mono-display text-[11px]">
-              <span className="text-white/35">HT</span>
+              <span className="text-white/35">{t("month_ht")}</span>
               <span className="text-white/60">{totalHt}</span>
             </div>
             <div className="flex items-center justify-between font-mono-display text-[11px]">
-              <span className="text-white/35">TVA</span>
+              <span className="text-white/35">{t("month_vat")}</span>
               <span className="text-white/60">{totalVat}</span>
             </div>
             <div className="flex items-center justify-between font-mono-display text-[11px]">
-              <span className="text-white/35">Docs</span>
+              <span className="text-white/35">{t("month_docs")}</span>
               <span className="text-white/60">{docsCount}</span>
             </div>
           </div>
@@ -321,7 +324,7 @@ export function MonthCard({
               isPositive ? "text-emerald-400" : "text-rose-400"
             }`}
           >
-            {isPositive ? "↑" : "↓"} {Math.abs(delta)}% vs mois dernier
+            {isPositive ? "↑" : "↓"} {t("month_delta_vs", { value: Math.abs(delta) })}
           </div>
         </>
       )}
@@ -334,6 +337,7 @@ export function MonthCard({
 // ────────────────────────────────────────────────────────────
 
 export function Pipeline({ stats }: { stats: InvoiceStats | null }) {
+  const t = useTranslations("dashboard");
   const counters = stats?.counters ?? {};
   const uploaded = counters.uploaded ?? 0;
   const processing = counters.processing ?? 0;
@@ -345,15 +349,15 @@ export function Pipeline({ stats }: { stats: InvoiceStats | null }) {
   const isEmpty = sum === 0;
 
   const steps = [
-    { label: "Reçues", value: uploaded, pct: uploaded / total },
-    { label: "Traitement", value: processing, pct: processing / total, pulse: processing > 0 },
-    { label: "À valider", value: review, pct: review / total },
-    { label: "Validées", value: confirmed, pct: confirmed / total },
+    { label: t("pipeline_received"), value: uploaded, pct: uploaded / total },
+    { label: t("pipeline_processing"), value: processing, pct: processing / total, pulse: processing > 0 },
+    { label: t("pipeline_to_validate"), value: review, pct: review / total },
+    { label: t("pipeline_validated"), value: confirmed, pct: confirmed / total },
   ];
 
   return (
     <Card className="col-span-4">
-      <WidgetTitle>Pipeline OCR</WidgetTitle>
+      <WidgetTitle>{t("pipeline_title")}</WidgetTitle>
       <div className="flex items-center justify-between gap-2">
         {steps.map((step, i) => (
           <div key={step.label} className="flex flex-1 items-center gap-2">
@@ -407,12 +411,15 @@ interface AuditResponse {
   items: AuditEntry[];
 }
 
-function formatRel(iso: string): string {
+function formatRel(
+  iso: string,
+  t: (k: string, v?: Record<string, string | number>) => string,
+): string {
   const d = new Date(iso);
   const diff = Date.now() - d.getTime();
-  if (diff < 60_000) return "à l'instant";
-  if (diff < 3_600_000) return `il y a ${Math.round(diff / 60_000)} min`;
-  if (diff < 86_400_000) return `il y a ${Math.round(diff / 3_600_000)} h`;
+  if (diff < 60_000) return t("rel_now");
+  if (diff < 3_600_000) return t("rel_minutes_ago", { value: Math.round(diff / 60_000) });
+  if (diff < 86_400_000) return t("rel_hours_ago", { value: Math.round(diff / 3_600_000) });
   return d.toLocaleDateString("fr-FR");
 }
 
@@ -424,19 +431,26 @@ function actionColor(action: string): string {
   return "bg-sky-400";
 }
 
-function humanAction(action: string, entity: string): string {
-  const MAP: Record<string, string> = {
-    "invoice.confirm": "Facture validée",
-    "invoice.reject": "Facture rejetée",
-    "invoice.reopen": "Facture réouverte",
-    "user.create": "Utilisateur créé",
-    "user.update": "Utilisateur modifié",
-    "user.deactivate": "Utilisateur désactivé",
+function humanAction(
+  action: string,
+  entity: string,
+  t: (k: string) => string,
+): string {
+  const KEY_MAP: Record<string, string> = {
+    "invoice.confirm": "action_invoice_confirm",
+    "invoice.reject": "action_invoice_reject",
+    "invoice.reopen": "action_invoice_reopen",
+    "user.create": "action_user_create",
+    "user.update": "action_user_update",
+    "user.deactivate": "action_user_deactivate",
   };
-  return MAP[action] ?? `${entity} · ${action}`;
+  const key = KEY_MAP[action];
+  return key ? t(key) : `${entity} · ${action}`;
 }
 
 export function ActivityFeed() {
+  const t = useTranslations("dashboard");
+  const tApp = useTranslations("app");
   const [items, setItems] = useState<AuditEntry[] | null>(null);
 
   useEffect(() => {
@@ -447,10 +461,10 @@ export function ActivityFeed() {
 
   return (
     <Card className="col-span-2">
-      <WidgetTitle>Activité récente</WidgetTitle>
-      {items === null && <p className="text-[12px] text-white/35">Chargement…</p>}
+      <WidgetTitle>{t("activity_title")}</WidgetTitle>
+      {items === null && <p className="text-[12px] text-white/35">{tApp("loading")}</p>}
       {items !== null && items.length === 0 && (
-        <p className="text-[12px] text-white/35">Aucune activité pour le moment.</p>
+        <p className="text-[12px] text-white/35">{t("activity_empty")}</p>
       )}
       {items !== null && items.length > 0 && (
         <div className="flex flex-col gap-3.5">
@@ -462,10 +476,10 @@ export function ActivityFeed() {
               />
               <div className="flex-1">
                 <div className="font-mono-display text-[10px] text-white/35">
-                  {formatRel(ev.created_at)}
+                  {formatRel(ev.created_at, t)}
                 </div>
                 <div className="text-[12px] leading-[1.4] text-white/60">
-                  {humanAction(ev.action, ev.entity_type)}
+                  {humanAction(ev.action, ev.entity_type, t)}
                   {ev.entity_id && (
                     <span className="ml-2 font-mono-display text-[10px] text-violet-300/80">
                       {ev.entity_id.slice(0, 8)}
@@ -486,6 +500,7 @@ export function ActivityFeed() {
 // ────────────────────────────────────────────────────────────
 
 export function TopSuppliers() {
+  const t = useTranslations("dashboard");
   const MOCK = [
     { name: "ΕΛΛΗΝΙΚΗ ΒΙΟΜΗΧΑΝΙΑ ΑΕ", count: 18, amount: "€12 840" },
     { name: "Acme SA", count: 14, amount: "€8 920" },
@@ -497,7 +512,7 @@ export function TopSuppliers() {
 
   return (
     <Card className="col-span-2">
-      <WidgetTitle>Top fournisseurs · 30 jours</WidgetTitle>
+      <WidgetTitle>{t("top_suppliers_title")}</WidgetTitle>
       <div className="flex flex-col gap-3">
         {MOCK.map((s, i) => (
           <div key={s.name} className="flex items-center gap-2.5">
@@ -537,6 +552,7 @@ interface HealthState {
 }
 
 export function IntegrationsHealth() {
+  const t = useTranslations("dashboard");
   const [state, setState] = useState<HealthState>({
     outlook: "off",
     gmail: "off",
@@ -576,7 +592,7 @@ export function IntegrationsHealth() {
 
   return (
     <Card>
-      <WidgetTitle>Santé intégrations</WidgetTitle>
+      <WidgetTitle>{t("integrations_title")}</WidgetTitle>
       <div className="flex flex-col gap-2">
         {CHIPS.map(({ key, label }) => {
           const s = state[key];
@@ -612,7 +628,7 @@ export function IntegrationsHealth() {
                       : "text-white/25"
                 }`}
               >
-                {s === "ok" ? "connecté" : s === "warn" ? "attention" : "—"}
+                {s === "ok" ? t("integration_connected") : s === "warn" ? t("integration_warning") : "—"}
               </span>
             </div>
           );
@@ -627,22 +643,31 @@ export function IntegrationsHealth() {
 // ────────────────────────────────────────────────────────────
 
 export function TodoList({ stats }: { stats: InvoiceStats | null }) {
+  const t = useTranslations("dashboard");
   const c = stats?.counters ?? {};
+  const reviewCount = c.ready_for_review ?? 0;
+  const failedCount = c.failed ?? 0;
   const items = [
     {
       done: false,
-      label: `Valider ${c.ready_for_review ?? 0} facture${(c.ready_for_review ?? 0) > 1 ? "s" : ""} en attente`,
+      label:
+        reviewCount > 1
+          ? t("todo_validate_plural", { count: reviewCount })
+          : t("todo_validate_singular", { count: reviewCount }),
     },
     {
-      done: (c.failed ?? 0) === 0,
-      label: `Traiter ${c.failed ?? 0} échec${(c.failed ?? 0) > 1 ? "s" : ""} OCR`,
+      done: failedCount === 0,
+      label:
+        failedCount > 1
+          ? t("todo_failures_plural", { count: failedCount })
+          : t("todo_failures_singular", { count: failedCount }),
     },
-    { done: false, label: "Exporter batch Q1 2026" },
+    { done: false, label: t("todo_export_batch") },
   ];
 
   return (
     <Card>
-      <WidgetTitle>À faire aujourd&apos;hui</WidgetTitle>
+      <WidgetTitle>{t("todo_title")}</WidgetTitle>
       <div className="flex flex-col gap-2.5">
         {items.map((it, i) => (
           <div key={i} className="flex items-center gap-2.5 text-[12px] text-white/60">
@@ -675,16 +700,18 @@ export function TodoList({ stats }: { stats: InvoiceStats | null }) {
 // ────────────────────────────────────────────────────────────
 
 export function Shortcuts() {
+  const t = useTranslations("dashboard");
+  const tNav = useTranslations("nav");
   const tiles = [
-    { href: "/upload", icon: Upload, label: "Importer" },
+    { href: "/upload", icon: Upload, label: tNav("upload") },
     { href: "#", icon: Search, label: "⌘K" },
-    { href: "#", icon: Download, label: "Export" },
-    { href: "/admin/audit", icon: FileText, label: "Audit" },
+    { href: "#", icon: Download, label: t("shortcut_export") },
+    { href: "/admin/audit", icon: FileText, label: tNav("audit") },
   ];
 
   return (
     <Card className="col-span-2">
-      <WidgetTitle>Raccourcis</WidgetTitle>
+      <WidgetTitle>{t("shortcuts_title")}</WidgetTitle>
       <div className="grid grid-cols-4 gap-2.5">
         {tiles.map(({ href, icon: Icon, label }) => (
           <Link
@@ -706,8 +733,10 @@ export function Shortcuts() {
 // ────────────────────────────────────────────────────────────
 
 export function Greeting({ name, total }: { name: string; total: number | null }) {
+  const t = useTranslations("dashboard");
   const hour = new Date().getHours();
-  const salut = hour < 12 ? "Bonjour" : hour < 18 ? "Bon après-midi" : "Bonsoir";
+  const salut =
+    hour < 12 ? t("greeting_morning") : hour < 18 ? t("greeting_afternoon") : t("greeting_evening");
   const firstName = name.split(" ")[0] || name;
 
   return (
@@ -717,8 +746,8 @@ export function Greeting({ name, total }: { name: string; total: number | null }
       </h1>
       <p className="mt-1 text-[13px] text-white/60">
         {total !== null
-          ? `Venio · ${total} factures au total · synchronisation active`
-          : "Venio · chargement…"}
+          ? t("greeting_subtitle", { count: total })
+          : t("greeting_subtitle_loading")}
       </p>
     </div>
   );

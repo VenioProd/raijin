@@ -9,11 +9,13 @@ from raijin_shared.models.audit import AuditLog
 from raijin_shared.models.user import User
 from sqlalchemy.ext.asyncio import AsyncSession
 
+from app.core.client_ip import get_client_ip
+
 
 def _request_context(request: Request | None) -> tuple[str | None, str | None]:
     if request is None:
         return None, None
-    ip = request.client.host if request.client else None
+    ip = get_client_ip(request)
     ua = request.headers.get("user-agent")
     return ip, (ua[:500] if ua else None)
 

@@ -16,6 +16,7 @@ import {
   Upload,
   Users,
 } from "lucide-react";
+import { useTranslations } from "next-intl";
 import { apiFetch } from "@/lib/api";
 import type { InvoiceStatus } from "@/lib/types";
 import { StatusBadge } from "@/components/status-badge";
@@ -42,23 +43,23 @@ interface SearchResponse {
 }
 
 type NavItem = {
-  label: string;
+  labelKey: string;
   href: string;
   icon: React.ComponentType<{ className?: string }>;
   keywords?: string[];
 };
 
 const NAV_ITEMS: NavItem[] = [
-  { label: "Tableau de bord", href: "/dashboard", icon: Home, keywords: ["dashboard", "accueil"] },
-  { label: "Factures", href: "/invoices", icon: FileText, keywords: ["invoices", "factures"] },
-  { label: "Rapports", href: "/reports", icon: BarChart3, keywords: ["reports", "tva", "p&l"] },
-  { label: "Fournisseurs", href: "/suppliers", icon: Building2, keywords: ["suppliers", "vendors"] },
-  { label: "Importer", href: "/upload", icon: Upload, keywords: ["upload", "import"] },
-  { label: "Intégrations", href: "/integrations", icon: Plug, keywords: ["outlook", "gmail", "drive", "mydata", "erp"] },
-  { label: "Utilisateurs", href: "/admin/users", icon: Users, keywords: ["users", "équipe"] },
-  { label: "Audit", href: "/admin/audit", icon: BarChart3, keywords: ["audit", "logs", "journal"] },
-  { label: "Notifications", href: "/notifications", icon: Bell },
-  { label: "Paramètres", href: "/settings", icon: Settings, keywords: ["settings", "preferences"] },
+  { labelKey: "dashboard", href: "/dashboard", icon: Home, keywords: ["dashboard", "accueil"] },
+  { labelKey: "invoices", href: "/invoices", icon: FileText, keywords: ["invoices", "factures"] },
+  { labelKey: "reports", href: "/reports", icon: BarChart3, keywords: ["reports", "tva", "p&l"] },
+  { labelKey: "suppliers", href: "/suppliers", icon: Building2, keywords: ["suppliers", "vendors"] },
+  { labelKey: "upload", href: "/upload", icon: Upload, keywords: ["upload", "import"] },
+  { labelKey: "integrations", href: "/integrations", icon: Plug, keywords: ["outlook", "gmail", "drive", "mydata", "erp"] },
+  { labelKey: "users", href: "/admin/users", icon: Users, keywords: ["users", "équipe"] },
+  { labelKey: "audit", href: "/admin/audit", icon: BarChart3, keywords: ["audit", "logs", "journal"] },
+  { labelKey: "notifications", href: "/notifications", icon: Bell },
+  { labelKey: "settings", href: "/settings", icon: Settings, keywords: ["settings", "preferences"] },
 ];
 
 function flagForCountry(code: string | null): string {
@@ -130,6 +131,8 @@ type FlatResult =
 
 function CommandPalette({ onClose }: { onClose: () => void }) {
   const router = useRouter();
+  const t = useTranslations("commandk");
+  const tNav = useTranslations("nav");
   const [query, setQuery] = useState("");
   const [debounced, setDebounced] = useState("");
   const [remote, setRemote] = useState<SearchResponse>({ invoices: [], suppliers: [] });
@@ -171,10 +174,10 @@ function CommandPalette({ onClose }: { onClose: () => void }) {
     const q = query.trim().toLowerCase();
     if (!q) return NAV_ITEMS;
     return NAV_ITEMS.filter((it) => {
-      const hay = [it.label, ...(it.keywords ?? [])].join(" ").toLowerCase();
+      const hay = [tNav(it.labelKey), ...(it.keywords ?? [])].join(" ").toLowerCase();
       return hay.includes(q);
     });
-  }, [query]);
+  }, [query, tNav]);
 
   const flat: FlatResult[] = useMemo(
     () => [
@@ -235,7 +238,7 @@ function CommandPalette({ onClose }: { onClose: () => void }) {
               ref={inputRef}
               value={query}
               onChange={(e) => setQuery(e.target.value)}
-              placeholder="Rechercher une facture, un fournisseur, une page…"
+              placeholder={t("placeholder")}
               className="flex-1 bg-transparent text-[14px] text-white placeholder:text-white/35 focus:outline-none"
             />
             <kbd className="raijin-kbd">ESC</kbd>
@@ -245,18 +248,20 @@ function CommandPalette({ onClose }: { onClose: () => void }) {
           <div className="max-h-[60vh] overflow-y-auto py-2">
             {flat.length === 0 && (
               <p className="py-10 text-center text-[13px] text-white/35">
-                Aucun résultat pour « {query} »
+                {t("no_results", { query })}
               </p>
             )}
 
             {navResults.length > 0 && (
-              <ResultGroup label="Navigation">
+              <ResultGroup label={t("group_navigation")}>
                 {navResults.map((item, idx) => {
                   const globalIdx = idx;
                   return (
                     <NavRow
                       key={item.href}
                       item={item}
+                      label={tNav(item.labelKey)}
+                      goLabel={t("go")}
                       active={globalIdx === activeIdx}
                       onClick={() => {
                         router.push(item.href as never);
@@ -269,7 +274,7 @@ function CommandPalette({ onClose }: { onClose: () => void }) {
             )}
 
             {remote.invoices.length > 0 && (
-              <ResultGroup label="Factures">
+              <ResultGroup label={t("group_invoices")}>
                 {remote.invoices.map((inv, idx) => {
                   const globalIdx = navResults.length + idx;
                   return (
@@ -288,7 +293,7 @@ function CommandPalette({ onClose }: { onClose: () => void }) {
             )}
 
             {remote.suppliers.length > 0 && (
-              <ResultGroup label="Fournisseurs">
+              <ResultGroup label={t("group_suppliers")}>
                 {remote.suppliers.map((s, idx) => {
                   const globalIdx = navResults.length + remote.invoices.length + idx;
                   return (
@@ -311,12 +316,12 @@ function CommandPalette({ onClose }: { onClose: () => void }) {
           <div className="flex items-center justify-between border-t border-white/[0.06] px-4 py-2 text-[11px] text-white/35">
             <div className="flex items-center gap-2">
               <span className="raijin-kbd">↑↓</span>
-              <span>naviguer</span>
+              <span>{t("hint_navigate")}</span>
               <span className="raijin-kbd">↵</span>
-              <span>ouvrir</span>
+              <span>{t("hint_open")}</span>
             </div>
             <div className="flex items-center gap-1.5">
-              <span>Raijin search</span>
+              <span>{t("brand_search")}</span>
               <span className="raijin-kbd">⌘K</span>
             </div>
           </div>
@@ -345,10 +350,14 @@ function ResultGroup({
 
 function NavRow({
   item,
+  label,
+  goLabel,
   active,
   onClick,
 }: {
   item: NavItem;
+  label: string;
+  goLabel: string;
   active: boolean;
   onClick: () => void;
 }) {
@@ -363,8 +372,8 @@ function NavRow({
       }`}
     >
       <Icon className={`h-[15px] w-[15px] ${active ? "text-violet-300" : "text-white/45"}`} />
-      <span className="flex-1">{item.label}</span>
-      <span className="text-[10px] text-white/30">Aller</span>
+      <span className="flex-1">{label}</span>
+      <span className="text-[10px] text-white/30">{goLabel}</span>
     </button>
   );
 }

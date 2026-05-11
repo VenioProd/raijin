@@ -2,6 +2,7 @@
 
 import * as React from "react";
 import { Eye, EyeOff } from "lucide-react";
+import { useTranslations } from "next-intl";
 import { cn } from "@/lib/utils";
 
 export type PasswordInputProps = Omit<
@@ -12,6 +13,7 @@ export type PasswordInputProps = Omit<
 export const PasswordInput = React.forwardRef<HTMLInputElement, PasswordInputProps>(
   ({ className, ...props }, ref) => {
     const [visible, setVisible] = React.useState(false);
+    const t = useTranslations("common");
     return (
       <div className="relative">
         <input
@@ -27,7 +29,7 @@ export const PasswordInput = React.forwardRef<HTMLInputElement, PasswordInputPro
           type="button"
           onClick={() => setVisible((v) => !v)}
           className="absolute inset-y-0 right-0 flex items-center px-3 text-muted-foreground hover:text-foreground focus:outline-none"
-          aria-label={visible ? "Masquer le mot de passe" : "Afficher le mot de passe"}
+          aria-label={visible ? t("hide_password") : t("show_password")}
           tabIndex={-1}
         >
           {visible ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}

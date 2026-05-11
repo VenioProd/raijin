@@ -11,6 +11,29 @@ concurrency:
   cancel-in-progress: true
 
 jobs:
+  secret-scan:
+    name: Secret scan · gitleaks
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      # Run the gitleaks binary directly: gitleaks-action@v2 requires a paid
+      # licence on org accounts. The OSS binary is unrestricted.
+      - name: Install gitleaks
+        run: |
+          GITLEAKS_VERSION=8.21.2
+          curl -sSfL "https://github.com/gitleaks/gitleaks/releases/download/v${GITLEAKS_VERSION}/gitleaks_${GITLEAKS_VERSION}_linux_x64.tar.gz" \
+            | tar -xz -C /usr/local/bin gitleaks
+          gitleaks version
+      - name: Run gitleaks
+        # --no-git scans the current working tree only. We deliberately do not
+        # scan git history because the rotated test admin password (#10) is
+        # there forever and would always trigger the custom rule. Going
+        # forward, anyone reintroducing it (or any default-rule secret) on the
+        # current tip will be caught.
+        run: gitleaks detect --no-git --source . --config .gitleaks.toml --redact --no-banner --verbose
+
   backend:
     name: Backend · lint + test
     runs-on: ubuntu-latest

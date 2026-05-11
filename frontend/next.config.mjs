@@ -5,6 +5,7 @@ const withNextIntl = createNextIntlPlugin("./src/i18n/request.ts");
 /** @type {import('next').NextConfig} */
 const nextConfig = {
   output: "standalone",
+  basePath: process.env.NEXT_PUBLIC_BASE_PATH || undefined,
   reactStrictMode: true,
   productionBrowserSourceMaps: Boolean(process.env.NEXT_PUBLIC_SENTRY_DSN),
   // typedRoutes was experimental and rejected string-typed hrefs (notifications entity links).
