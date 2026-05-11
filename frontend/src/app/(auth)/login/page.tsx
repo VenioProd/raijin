@@ -49,7 +49,7 @@ export default function LoginPage() {
   }
 
   return (
-    <div className="glass glass-glow p-8" style={{ borderRadius: 22 }}>
+    <div className="glass glass-glow p-5 sm:p-8" style={{ borderRadius: 22 }}>
       <div className="relative z-10">
         <div className="mb-6 flex items-center gap-2.5">
           <div
