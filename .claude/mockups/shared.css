@@ -1,0 +1,523 @@
+/* ─── Shared tokens & shell for all 3 mockups ─── */
+
+@import url("https://fonts.googleapis.com/css2?family=Fraunces:ital,wght@0,400;0,500;0,600;1,400;1,600&family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@500&display=swap");
+
+* {
+  box-sizing: border-box;
+}
+
+:root {
+  --bg: #0a0a0d;
+  --bg-elev: #111114;
+  --line: rgba(255, 255, 255, 0.06);
+  --line-strong: rgba(255, 255, 255, 0.1);
+  --fg: rgba(255, 255, 255, 0.96);
+  --fg-mute: rgba(255, 255, 255, 0.5);
+  --fg-faint: rgba(255, 255, 255, 0.32);
+  --accent: #a78bfa;
+  --green: #34d399;
+  --green-bg: rgba(52, 211, 153, 0.14);
+  --amber: #fbbf24;
+  --amber-bg: rgba(251, 191, 36, 0.14);
+  --red: #f87171;
+  --red-bg: rgba(248, 113, 113, 0.14);
+  --blue: #60a5fa;
+  --blue-bg: rgba(96, 165, 250, 0.14);
+}
+
+html,
+body {
+  margin: 0;
+  padding: 0;
+  background: var(--bg);
+  color: var(--fg);
+  font-family: "Inter", -apple-system, BlinkMacSystemFont, sans-serif;
+  font-feature-settings: "cv11", "ss01";
+  -webkit-font-smoothing: antialiased;
+  letter-spacing: -0.005em;
+}
+
+a {
+  color: inherit;
+  text-decoration: none;
+}
+
+.shell {
+  display: grid;
+  grid-template-columns: 56px 1fr;
+  min-height: 100vh;
+}
+
+/* ─── Sidebar (icons only) ─── */
+.sidebar {
+  position: sticky;
+  top: 0;
+  height: 100vh;
+  background: rgba(255, 255, 255, 0.015);
+  border-right: 1px solid var(--line);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 18px 0;
+  gap: 4px;
+}
+.sidebar .logo {
+  width: 32px;
+  height: 32px;
+  border-radius: 9px;
+  background: linear-gradient(135deg, #8b5cf6, #6366f1);
+  display: grid;
+  place-items: center;
+  color: white;
+  font-weight: 700;
+  font-size: 14px;
+  margin-bottom: 14px;
+  box-shadow: 0 6px 20px -4px rgba(139, 92, 246, 0.6);
+}
+.sidebar .sep {
+  width: 24px;
+  height: 1px;
+  background: var(--line);
+  margin: 6px 0;
+}
+.sidebar .ico {
+  width: 36px;
+  height: 36px;
+  display: grid;
+  place-items: center;
+  border-radius: 9px;
+  color: var(--fg-faint);
+  transition: 0.15s;
+  cursor: default;
+  position: relative;
+}
+.sidebar .ico svg {
+  width: 17px;
+  height: 17px;
+}
+.sidebar .ico:hover {
+  color: var(--fg);
+  background: rgba(255, 255, 255, 0.04);
+}
+.sidebar .ico.active {
+  color: white;
+  background: linear-gradient(135deg, rgba(139, 92, 246, 0.25), rgba(99, 102, 241, 0.15));
+  box-shadow: inset 0 0 0 1px rgba(139, 92, 246, 0.3);
+}
+.sidebar .ico.active::before {
+  content: "";
+  position: absolute;
+  left: -10px;
+  top: 7px;
+  bottom: 7px;
+  width: 2px;
+  border-radius: 2px;
+  background: linear-gradient(180deg, #a78bfa, #818cf8);
+}
+.sidebar .spacer {
+  flex: 1;
+}
+.sidebar .avatar {
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  background: linear-gradient(135deg, #8b5cf6, #a855f7);
+  display: grid;
+  place-items: center;
+  color: white;
+  font-weight: 700;
+  font-size: 11px;
+}
+
+/* ─── Main column ─── */
+.main {
+  padding: 40px 64px 80px;
+  max-width: 920px;
+  margin: 0 auto;
+  width: 100%;
+}
+
+/* ─── Variant switcher (top right) ─── */
+.switcher {
+  position: fixed;
+  top: 20px;
+  right: 24px;
+  z-index: 50;
+  display: flex;
+  gap: 4px;
+  padding: 4px;
+  background: rgba(20, 20, 26, 0.85);
+  border: 1px solid var(--line-strong);
+  border-radius: 999px;
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  font-size: 12px;
+}
+.switcher a {
+  padding: 6px 14px;
+  border-radius: 999px;
+  color: var(--fg-mute);
+  font-weight: 500;
+  transition: 0.15s;
+}
+.switcher a:hover {
+  color: var(--fg);
+}
+.switcher a.active {
+  background: white;
+  color: #0a0a0d;
+}
+
+/* ─── Common typography ─── */
+.caption {
+  font-size: 12px;
+  color: var(--fg-faint);
+  text-transform: lowercase;
+  letter-spacing: 0.02em;
+  margin: 0 0 6px;
+}
+.title {
+  font-family: "Fraunces", ui-serif, Georgia, serif;
+  font-weight: 500;
+  font-size: 56px;
+  line-height: 1;
+  letter-spacing: -0.025em;
+  margin: 0;
+}
+.title em {
+  font-style: italic;
+  color: var(--accent);
+}
+.subtitle {
+  font-size: 14px;
+  color: var(--fg-mute);
+  margin: 14px 0 0;
+}
+.subtitle b {
+  color: var(--fg);
+  font-weight: 600;
+}
+
+/* ─── Section header ─── */
+.section-head {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  margin: 44px 0 14px;
+}
+.section-head h3 {
+  font-family: "Fraunces", ui-serif, Georgia, serif;
+  font-style: italic;
+  font-weight: 400;
+  font-size: 18px;
+  margin: 0;
+  color: var(--fg);
+}
+.section-head .see-all {
+  font-size: 12px;
+  color: var(--fg-mute);
+  font-weight: 500;
+}
+.section-head .see-all:hover {
+  color: var(--fg);
+}
+
+/* ─── Invoice rows (shared) ─── */
+.row {
+  display: grid;
+  grid-template-columns: 1fr auto auto;
+  gap: 24px;
+  align-items: center;
+  padding: 16px 4px;
+  border-bottom: 1px solid var(--line);
+  transition: 0.15s;
+}
+.row:hover {
+  background: rgba(255, 255, 255, 0.02);
+}
+.row .left .name {
+  font-size: 15px;
+  font-weight: 600;
+  color: var(--fg);
+  letter-spacing: -0.01em;
+}
+.row .left .meta {
+  font-size: 12px;
+  color: var(--fg-faint);
+  font-family: "JetBrains Mono", monospace;
+  margin-top: 4px;
+}
+.row .amount {
+  font-size: 15px;
+  font-weight: 600;
+  color: var(--fg);
+  font-variant-numeric: tabular-nums;
+}
+.row .pill {
+  font-size: 11px;
+  font-weight: 600;
+  padding: 4px 10px;
+  border-radius: 999px;
+  letter-spacing: 0.01em;
+  min-width: 78px;
+  text-align: center;
+}
+.pill.review {
+  background: var(--amber-bg);
+  color: var(--amber);
+}
+.pill.confirmed {
+  background: var(--green-bg);
+  color: var(--green);
+}
+.pill.rejected {
+  background: var(--red-bg);
+  color: var(--red);
+}
+.pill.processing {
+  background: var(--blue-bg);
+  color: var(--blue);
+}
+
+/* ─── Stocks-style colored block (replaces pills in v4-v6) ─── */
+.block {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: flex-end;
+  padding: 8px 12px;
+  border-radius: 8px;
+  min-width: 92px;
+  text-align: right;
+  font-variant-numeric: tabular-nums;
+}
+.block .big {
+  font-size: 14px;
+  font-weight: 700;
+  color: #fff;
+  letter-spacing: -0.005em;
+}
+.block .small {
+  font-size: 10px;
+  font-weight: 500;
+  color: rgba(255, 255, 255, 0.85);
+  text-transform: lowercase;
+  margin-top: 1px;
+}
+.block.amber { background: #d97706; }
+.block.green { background: #16a34a; }
+.block.red   { background: #dc2626; }
+.block.blue  { background: #2563eb; }
+.block.gray  { background: #525252; }
+
+/* ─── Sparkline ─── */
+.spark {
+  display: block;
+}
+
+/* ─── Section caption (micro-bold like "MY SYMBOLS") ─── */
+.cat-cap {
+  font-size: 11px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: var(--fg-mute);
+  margin: 36px 0 12px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+.cat-cap .right {
+  font-weight: 500;
+  text-transform: none;
+  letter-spacing: 0;
+  font-size: 12px;
+  color: var(--fg-faint);
+}
+
+/* ─── Time chips (segmented control) ─── */
+.chips {
+  display: inline-flex;
+  gap: 2px;
+  padding: 3px;
+  background: rgba(255, 255, 255, 0.04);
+  border-radius: 10px;
+  margin-top: 20px;
+}
+.chips .chip {
+  padding: 6px 12px;
+  border-radius: 8px;
+  font-size: 11px;
+  font-weight: 600;
+  color: var(--fg-mute);
+  cursor: default;
+  letter-spacing: 0.01em;
+}
+.chips .chip.active {
+  background: rgba(255, 255, 255, 0.1);
+  color: var(--fg);
+}
+
+/* ─── Stats grid (Stocks detail) ─── */
+.stats {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 0;
+  margin-top: 28px;
+  border-top: 1px solid var(--line);
+}
+.stats .cell {
+  padding: 14px 12px 14px 0;
+  border-bottom: 1px solid var(--line);
+}
+.stats .cell .k {
+  font-size: 11px;
+  color: var(--fg-faint);
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  margin-bottom: 4px;
+}
+.stats .cell .v {
+  font-size: 16px;
+  font-weight: 600;
+  color: var(--fg);
+  font-variant-numeric: tabular-nums;
+}
+
+/* ─── Discover (news-style) cards ─── */
+.discover {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 10px;
+}
+.disco {
+  display: grid;
+  grid-template-columns: 1fr auto;
+  gap: 16px;
+  padding: 18px;
+  border-radius: 14px;
+  background: rgba(255, 255, 255, 0.03);
+  border: 1px solid var(--line);
+  align-items: center;
+}
+.disco .pub {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 11px;
+  font-weight: 600;
+  color: var(--fg-faint);
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  margin-bottom: 8px;
+}
+.disco .pub .dot-pub {
+  width: 14px;
+  height: 14px;
+  border-radius: 50%;
+  background: linear-gradient(135deg, #8b5cf6, #6366f1);
+}
+.disco .head {
+  font-family: "Fraunces", ui-serif, Georgia, serif;
+  font-size: 16px;
+  font-weight: 500;
+  letter-spacing: -0.01em;
+  line-height: 1.25;
+  color: var(--fg);
+}
+.disco .time {
+  font-size: 11px;
+  color: var(--fg-faint);
+  margin-top: 10px;
+}
+.disco .thumb {
+  width: 64px;
+  height: 64px;
+  border-radius: 10px;
+  display: grid;
+  place-items: center;
+  font-size: 28px;
+}
+.disco .thumb.violet { background: linear-gradient(135deg, rgba(139,92,246,0.25), rgba(99,102,241,0.15)); }
+.disco .thumb.green  { background: linear-gradient(135deg, rgba(52,211,153,0.25), rgba(20,184,166,0.15)); }
+.disco .thumb.amber  { background: linear-gradient(135deg, rgba(251,191,36,0.25), rgba(245,158,11,0.15)); }
+.disco .thumb.red    { background: linear-gradient(135deg, rgba(248,113,113,0.25), rgba(220,38,38,0.15)); }
+.disco .thumb.blue   { background: linear-gradient(135deg, rgba(96,165,250,0.25), rgba(37,99,235,0.15)); }
+
+/* ─── Search bar (v5) ─── */
+.searchbar {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 12px 16px;
+  background: rgba(255, 255, 255, 0.05);
+  border-radius: 12px;
+  margin-top: 8px;
+}
+.searchbar svg {
+  width: 16px;
+  height: 16px;
+  color: var(--fg-faint);
+}
+.searchbar input {
+  background: none;
+  border: none;
+  outline: none;
+  color: var(--fg);
+  font-size: 14px;
+  font-family: inherit;
+  flex: 1;
+}
+.searchbar input::placeholder {
+  color: var(--fg-faint);
+}
+.searchbar .kbd {
+  font-family: "JetBrains Mono", monospace;
+  font-size: 11px;
+  color: var(--fg-faint);
+  padding: 2px 6px;
+  border-radius: 4px;
+  background: rgba(255, 255, 255, 0.05);
+}
+
+/* ─── v4/v5 row layout with sparkline + block ─── */
+.s-row {
+  display: grid;
+  grid-template-columns: 1fr 100px 100px;
+  gap: 24px;
+  align-items: center;
+  padding: 12px 4px;
+  border-bottom: 1px solid var(--line);
+}
+
+/* ─── Activity cards ─── */
+.activity {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 12px;
+  margin-top: 14px;
+}
+.act-card {
+  padding: 18px;
+  border-radius: 14px;
+  background: rgba(255, 255, 255, 0.025);
+  border: 1px solid var(--line);
+}
+.act-card .kicker {
+  font-size: 11px;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  font-weight: 600;
+  color: var(--accent);
+  margin-bottom: 8px;
+}
+.act-card .body {
+  font-size: 13px;
+  color: var(--fg);
+  line-height: 1.45;
+}
+.act-card .time {
+  font-size: 11px;
+  color: var(--fg-faint);
+  margin-top: 8px;
+}

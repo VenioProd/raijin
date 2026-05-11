@@ -4,7 +4,8 @@
     "tagline": "Αυτοματοποίηση τιμολογίων",
     "admin_badge": "admin",
     "loading": "Φόρτωση…",
-    "search_placeholder": "Αναζήτηση…"
+    "search_placeholder": "Αναζήτηση…",
+    "logout": "Αποσύνδεση"
   },
   "nav": {
     "dashboard": "Πίνακας ελέγχου",
@@ -171,7 +172,16 @@
     "export_downloaded": "Η εξαγωγή ολοκληρώθηκε",
     "export_failed": "Η εξαγωγή απέτυχε",
     "error_with_status": "Σφάλμα {status}",
-    "my_data_footer": "Η εξαγωγή περιλαμβάνει το προφίλ, τα τιμολόγια, τους προμηθευτές και τις συνεδρίες σου. Η διαγραφή προγραμματίζεται σε +30 ημέρες και είναι αναστρέψιμη σε αυτό το διάστημα."
+    "my_data_footer": "Η εξαγωγή περιλαμβάνει το προφίλ, τα τιμολόγια, τους προμηθευτές και τις συνεδρίες σου. Η διαγραφή προγραμματίζεται σε +30 ημέρες και είναι αναστρέψιμη σε αυτό το διάστημα.",
+    "appearance_title": "Εμφάνιση",
+    "appearance_desc": "Επίλεξε το χρώμα έμφασης της διεπαφής.",
+    "appearance_hint": "Η προτίμηση αποθηκεύεται τοπικά σε αυτή τη συσκευή.",
+    "theme_graphite": "Γραφίτης",
+    "theme_indigo": "Ίντιγκο",
+    "theme_forest": "Δάσος",
+    "theme_bronze": "Μπρούτζος",
+    "theme_wine": "Μπορντό",
+    "theme_slate": "Σχιστόλιθος"
   },
   "dashboard": {
     "greeting": "Γεια σας",
@@ -243,7 +253,23 @@
     "greeting_afternoon": "Καλό απόγευμα",
     "greeting_evening": "Καλησπέρα",
     "greeting_subtitle": "Venio · {count} τιμολόγια συνολικά · ενεργός συγχρονισμός",
-    "greeting_subtitle_loading": "Venio · φόρτωση…"
+    "greeting_subtitle_loading": "Venio · φόρτωση…",
+    "portfolio_kicker": "Χαρτοφυλάκιο · Τελευταίες 30 ημέρες",
+    "vs_previous": "έναντι των προηγούμενων 30 ημερών",
+    "range_label": "Χρονικό εύρος",
+    "stat_ht": "Καθαρό",
+    "stat_tva": "ΦΠΑ",
+    "stat_ttc": "Σύνολο",
+    "stat_pending": "Προς έλεγχο",
+    "stat_median": "Διάμεση τιμή",
+    "stat_mean": "Μέσος όρος",
+    "stat_max": "Υψηλότερη",
+    "stat_ocr": "OCR μ.ό.",
+    "top_suppliers": "Κορυφαίοι προμηθευτές",
+    "see_all": "Δες όλους",
+    "no_suppliers_yet": "Δεν υπάρχουν προμηθευτές ακόμη.",
+    "invoice_count": "{count, plural, =0 {Καθόλου τιμολόγια} one {# τιμολόγιο} other {# τιμολόγια}}",
+    "invoice_count_short": "{count, plural, =0 {0 τιμ.} one {# τιμ.} other {# τιμ.}}"
   },
   "commandk": {
     "placeholder": "Αναζήτηση τιμολογίων, προμηθευτών, σελίδων…",

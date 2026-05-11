@@ -2,7 +2,8 @@ import { expect, test } from "@playwright/test";
 import { makeAccount, seedAuth } from "./helpers";
 
 const PAGES: { path: string; expect: RegExp }[] = [
-  { path: "/dashboard", expect: /Bonjour|Bon après-midi|Bonsoir/i },
+  // Dashboard hero shows the portfolio total as the H1 (currency-formatted EUR amount, or em-dash when no data).
+  { path: "/dashboard", expect: /€|—/ },
   { path: "/invoices", expect: /Factures/i },
   { path: "/reports", expect: /Rapports/i },
   { path: "/suppliers", expect: /Fournisseurs/i },

@@ -1,0 +1,163 @@
+<!doctype html>
+<html lang="fr">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width,initial-scale=1" />
+    <title>Raijin — Groupes · Variant 3</title>
+    <link rel="stylesheet" href="shared.css" />
+    <style>
+      /* Variant 3 specifics */
+      .v3-row {
+        grid-template-columns: 14px 1fr auto auto;
+        gap: 16px;
+      }
+      .v3-row .dot {
+        width: 8px;
+        height: 8px;
+        border-radius: 50%;
+      }
+      .dot.amber { background: var(--amber); box-shadow: 0 0 12px rgba(251,191,36,0.5); }
+      .dot.blue { background: var(--blue); box-shadow: 0 0 12px rgba(96,165,250,0.5); }
+      .dot.green { background: var(--green); box-shadow: 0 0 12px rgba(52,211,153,0.5); }
+      .dot.red { background: var(--red); box-shadow: 0 0 12px rgba(248,113,113,0.5); }
+
+      .group {
+        margin-top: 36px;
+      }
+      .group h3 {
+        font-family: "Fraunces", ui-serif, Georgia, serif;
+        font-style: italic;
+        font-weight: 400;
+        font-size: 22px;
+        margin: 0 0 4px;
+        color: var(--fg);
+      }
+      .group .meta {
+        font-size: 12px;
+        color: var(--fg-faint);
+        font-family: "JetBrains Mono", monospace;
+        margin-bottom: 14px;
+      }
+      .group .meta b {
+        color: var(--fg-mute);
+        font-weight: 500;
+      }
+      .group-head {
+        display: flex;
+        align-items: baseline;
+        justify-content: space-between;
+      }
+      .group-head .see-all {
+        font-size: 12px;
+        color: var(--fg-mute);
+      }
+      /* Trim the last border in each group for tidiness */
+      .group .row:last-child {
+        border-bottom: none;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="switcher">
+      <a href="variant-1.html">1 · Watchlist</a>
+      <a href="variant-2.html">2 · Hero</a>
+      <a href="variant-3.html" class="active">3 · Groupes</a>
+      <a href="variant-4.html">4 · Stocks pur</a>
+      <a href="variant-5.html">5 · Découvrir</a>
+      <a href="variant-6.html">6 · Portfolio</a>
+    </div>
+
+    <div class="shell">
+      <aside class="sidebar">
+        <div class="logo">⚡</div>
+        <div class="ico active"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="8" y1="13" x2="16" y2="13"/><line x1="8" y1="17" x2="14" y2="17"/></svg></div>
+        <div class="ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 21h18M5 21V7l8-4v18M19 21V11l-6-4"/></svg></div>
+        <div class="ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="20" x2="12" y2="10"/><line x1="18" y1="20" x2="18" y2="4"/><line x1="6" y1="20" x2="6" y2="16"/></svg></div>
+        <div class="ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg></div>
+        <div class="sep"></div>
+        <div class="ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 12h-4l-3 9L9 3l-3 9H2"/></svg></div>
+        <div class="ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/></svg></div>
+        <div class="spacer"></div>
+        <div class="avatar">RB</div>
+      </aside>
+
+      <main class="main">
+        <p class="caption">lundi 11 mai</p>
+        <h1 class="title">Bonjour <em>Raphaël</em></h1>
+        <p class="subtitle"><b>12</b> à valider · <b>3</b> en OCR · <b>69</b> validées ce mois</p>
+
+        <!-- Group 1: à valider -->
+        <div class="group">
+          <div class="group-head">
+            <h3>À valider</h3>
+            <a class="see-all" href="#">12 · Tout voir →</a>
+          </div>
+          <div class="meta"><b>1 689,30 €</b> en attente</div>
+          <div class="row v3-row"><div class="dot amber"></div>
+            <div class="left"><div class="name">Carrefour Pro</div><div class="meta">FAC-2026-0421 · 11 mai</div></div>
+            <div class="amount">1 248,40 €</div>
+            <div class="pill review">à valider</div>
+          </div>
+          <div class="row v3-row"><div class="dot amber"></div>
+            <div class="left"><div class="name">EDF Entreprises</div><div class="meta">FAC-2026-0420 · 11 mai</div></div>
+            <div class="amount">842,00 €</div>
+            <div class="pill review">à valider</div>
+          </div>
+          <div class="row v3-row"><div class="dot red"></div>
+            <div class="left"><div class="name">Espresso Marvel SARL</div><div class="meta">FAC-2026-0415 · OCR 64% · 09 mai</div></div>
+            <div class="amount">2 980,00 €</div>
+            <div class="pill rejected">conflit</div>
+          </div>
+          <div class="row v3-row"><div class="dot amber"></div>
+            <div class="left"><div class="name">Bureau Vallée Paris 15</div><div class="meta">FAC-2026-0418 · 10 mai</div></div>
+            <div class="amount">187,90 €</div>
+            <div class="pill review">à valider</div>
+          </div>
+        </div>
+
+        <!-- Group 2: en cours -->
+        <div class="group">
+          <div class="group-head">
+            <h3>OCR en cours</h3>
+            <a class="see-all" href="#">3 · Détails →</a>
+          </div>
+          <div class="meta">extraction Azure DI · ~30 s par facture</div>
+          <div class="row v3-row"><div class="dot blue"></div>
+            <div class="left"><div class="name">Free Pro Mobile</div><div class="meta">via Outlook · 11 mai, 10:14</div></div>
+            <div class="amount">—</div>
+            <div class="pill processing">analyse</div>
+          </div>
+          <div class="row v3-row"><div class="dot blue"></div>
+            <div class="left"><div class="name">OVH Cloud</div><div class="meta">via Gmail · 11 mai, 10:12</div></div>
+            <div class="amount">—</div>
+            <div class="pill processing">analyse</div>
+          </div>
+        </div>
+
+        <!-- Group 3: validées aujourd'hui -->
+        <div class="group">
+          <div class="group-head">
+            <h3>Validées aujourd'hui</h3>
+            <a class="see-all" href="#">8 · Voir le journal →</a>
+          </div>
+          <div class="meta"><b>+ 4 218,00 €</b> exportés vers SoftOne</div>
+          <div class="row v3-row"><div class="dot green"></div>
+            <div class="left"><div class="name">SNCF Connect</div><div class="meta">FAC-2026-0417 · 09 mai</div></div>
+            <div class="amount">94,00 €</div>
+            <div class="pill confirmed">validée</div>
+          </div>
+          <div class="row v3-row"><div class="dot green"></div>
+            <div class="left"><div class="name">Microsoft 365</div><div class="meta">FAC-2026-0416 · 09 mai</div></div>
+            <div class="amount">540,00 €</div>
+            <div class="pill confirmed">validée</div>
+          </div>
+          <div class="row v3-row"><div class="dot green"></div>
+            <div class="left"><div class="name">Orange Business</div><div class="meta">FAC-2026-0419 · 10 mai</div></div>
+            <div class="amount">312,00 €</div>
+            <div class="pill confirmed">validée</div>
+          </div>
+        </div>
+      </main>
+    </div>
+  </body>
+</html>

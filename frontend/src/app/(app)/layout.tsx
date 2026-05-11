@@ -6,9 +6,9 @@ import { useTranslations } from "next-intl";
 import { apiFetch } from "@/lib/api";
 import { clearTokens, getAccessToken } from "@/lib/auth";
 import type { User } from "@/lib/types";
-import { AmbientBg } from "@/components/app-shell/ambient-bg";
 import { Sidebar } from "@/components/app-shell/sidebar";
 import { CommandPaletteProvider } from "@/components/command-palette";
+import { ThemeProvider } from "@/components/theme-provider";
 
 export default function AppLayout({ children }: { children: React.ReactNode }) {
   const router = useRouter();
@@ -34,23 +34,22 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
 
   if (!ready) {
     return (
-      <div className="flex min-h-screen items-center justify-center bg-[#050508] text-sm text-white/50">
+      <div className="flex min-h-screen items-center justify-center bg-[#0a0a0d] text-sm text-white/50">
         {t("loading")}
       </div>
     );
   }
 
   return (
-    <CommandPaletteProvider>
-      <div className="raijin-shell relative flex h-screen overflow-hidden">
-        <AmbientBg />
-        <div className="relative z-10 flex h-screen w-full">
+    <ThemeProvider>
+      <CommandPaletteProvider>
+        <div className="raijin-shell relative flex h-screen overflow-hidden">
           <Sidebar user={user} />
-          <main className="raijin-scroll relative flex-1 overflow-y-auto px-7 pb-10 pt-7">
-            {children}
+          <main className="raijin-scroll relative flex-1 overflow-y-auto px-10 pb-16 pt-10">
+            <div className="mx-auto w-full max-w-[920px]">{children}</div>
           </main>
         </div>
-      </div>
-    </CommandPaletteProvider>
+      </CommandPaletteProvider>
+    </ThemeProvider>
   );
 }

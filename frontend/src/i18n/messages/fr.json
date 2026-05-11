@@ -4,7 +4,8 @@
     "tagline": "Automatisation de factures",
     "admin_badge": "admin",
     "loading": "Chargement…",
-    "search_placeholder": "Rechercher…"
+    "search_placeholder": "Rechercher…",
+    "logout": "Déconnexion"
   },
   "nav": {
     "dashboard": "Tableau de bord",
@@ -171,7 +172,16 @@
     "export_downloaded": "Export téléchargé",
     "export_failed": "Export impossible",
     "error_with_status": "Erreur {status}",
-    "my_data_footer": "L'export inclut ton profil, tes factures, tes fournisseurs et tes sessions. La suppression est planifiée à +30 jours et réversible pendant cette période."
+    "my_data_footer": "L'export inclut ton profil, tes factures, tes fournisseurs et tes sessions. La suppression est planifiée à +30 jours et réversible pendant cette période.",
+    "appearance_title": "Apparence",
+    "appearance_desc": "Choisis la couleur d'accent de l'interface.",
+    "appearance_hint": "La préférence est stockée localement sur cet appareil.",
+    "theme_graphite": "Graphite",
+    "theme_indigo": "Indigo",
+    "theme_forest": "Forêt",
+    "theme_bronze": "Bronze",
+    "theme_wine": "Bordeaux",
+    "theme_slate": "Ardoise"
   },
   "dashboard": {
     "greeting": "Bonjour",
@@ -243,7 +253,23 @@
     "greeting_afternoon": "Bon après-midi",
     "greeting_evening": "Bonsoir",
     "greeting_subtitle": "Venio · {count} factures au total · synchronisation active",
-    "greeting_subtitle_loading": "Venio · chargement…"
+    "greeting_subtitle_loading": "Venio · chargement…",
+    "portfolio_kicker": "Portfolio · 30 derniers jours",
+    "vs_previous": "vs 30 jours précédents",
+    "range_label": "Plage temporelle",
+    "stat_ht": "Total HT",
+    "stat_tva": "Total TVA",
+    "stat_ttc": "Total TTC",
+    "stat_pending": "À valider",
+    "stat_median": "Médiane",
+    "stat_mean": "Moyenne",
+    "stat_max": "Plus haute",
+    "stat_ocr": "OCR moy.",
+    "top_suppliers": "Top fournisseurs",
+    "see_all": "Voir tout",
+    "no_suppliers_yet": "Aucun fournisseur pour le moment.",
+    "invoice_count": "{count, plural, =0 {Aucune facture} one {# facture} other {# factures}}",
+    "invoice_count_short": "{count, plural, =0 {0 fact.} one {# fact.} other {# fact.}}"
   },
   "commandk": {
     "placeholder": "Rechercher une facture, un fournisseur, une page…",
