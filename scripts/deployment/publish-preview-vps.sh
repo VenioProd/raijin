@@ -9,9 +9,9 @@ cd "$BASE"
 
 if [ ! -f .env.production ]; then
   JWT_SECRET="$(openssl rand -base64 64 | tr -d '\n')"
-  POSTGRES_PASSWORD="$(openssl rand -base64 32 | tr -d '\n' | tr '+/' '-_')"
+  POSTGRES_PASSWORD="$(openssl rand -hex 32)"
   ENCRYPTION_KEY="$(openssl rand -base64 32 | tr '+/' '-_')"
-  S3_SECRET_KEY="$(openssl rand -base64 24 | tr -d '\n' | tr '+/' '-_')"
+  S3_SECRET_KEY="$(openssl rand -hex 24)"
   cat > .env.production <<EOF
 ENVIRONMENT=staging
 LOG_LEVEL=INFO
