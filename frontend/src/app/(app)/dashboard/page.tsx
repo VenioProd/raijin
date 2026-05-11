@@ -81,9 +81,9 @@ export default function DashboardPage() {
   return (
     <div className="space-y-6">
       {/* Topbar */}
-      <div className="flex items-start justify-between">
+      <div className="flex flex-col gap-4 md:flex-row md:items-start md:justify-between">
         <Greeting name={displayName} total={total} />
-        <div className="flex items-center gap-2.5">
+        <div className="flex flex-wrap items-center gap-2.5">
           <button onClick={exportExcel} className="btn-glass">
             <Download className="h-3.5 w-3.5" />
             {t("export_excel")}
@@ -96,7 +96,7 @@ export default function DashboardPage() {
       </div>
 
       {/* Widget grid */}
-      <div className="grid grid-cols-4 gap-4">
+      <div className="dashboard-grid grid grid-cols-1 gap-4 md:grid-cols-2 xl:grid-cols-4">
         <HeroPending pending={pending} total={total} />
         <ConfidenceGauge confidence={confidence} />
         <MonthCard

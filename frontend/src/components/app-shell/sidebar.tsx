@@ -152,7 +152,7 @@ export function Sidebar({ user }: { user: User | null }) {
 
   return (
     <aside
-      className="relative flex h-screen w-[240px] shrink-0 flex-col overflow-hidden px-3.5 py-5"
+      className="relative hidden h-screen w-[240px] shrink-0 flex-col overflow-hidden px-3.5 py-5 md:flex"
       style={{
         background: "rgba(255,255,255,0.025)",
         backdropFilter: "blur(40px) saturate(160%)",
